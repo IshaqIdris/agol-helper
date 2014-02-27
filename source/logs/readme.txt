@@ -1,0 +1,1 @@
+This folder needs to exist for the log to be sent here.  .log files are ignored in github, use this format if you do not want to sync your logs
