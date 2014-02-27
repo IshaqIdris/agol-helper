@@ -126,10 +126,10 @@ class FeatureService(object):
                     "synerror": synerror
             })
     #----------------------------------------------------------------------
-    def _getOIDField(self):
+    def _getOIDField(self, sql="1=1"):
         """ private method that gets the OID field for the feature service """
         params = {"f": "json",
-              "where": "1=1",
+              "where": sql,
               "returnIdsOnly":"true",
               "token": self._token}
         fURL = self._url + "/query?" + urllib.urlencode(params)
@@ -156,11 +156,10 @@ class FeatureService(object):
         self._spatialReference = unicode_convert(json_data["spatialReference"])
 
     #----------------------------------------------------------------------
-    @property
-    def OIDS(self):
+    def OIDS(self, sql="1=1"):
         """ returns a collection of OIDs from the feature service"""
         if self._OIDS is None:
-            self._OIDS = self._getOIDField()
+            self._OIDS = self._getOIDField(sql)
         return self._OIDS
     #----------------------------------------------------------------------
     @property
