@@ -55,5 +55,5 @@ limitations under the License.
 A copy of the license is available in the repository's
 [LICENSE.txt](License.txt) file.
 
-[](Esri Tags: Utilities AGOL Python ArcGIS-Online)
+[](Esri Tags: Utilities Local-Government State-Government Government AGOL Python ArcGIS-Online)
 [](Esri Language: Python)
