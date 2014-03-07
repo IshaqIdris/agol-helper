@@ -4,12 +4,13 @@ import arcpy
 import sys, os, datetime
 import ConfigParser
 
-from agol import Utilities
-from agol import services
-
 from arcpy import env
-from agol.Utilities import FeatureServiceError
-from agol.Utilities import UtilitiesError
+
+from agol import common
+from agol import featureservice
+from agol import layer
+
+from arcpyhelper import helper
 
 logFileName ='.\\logs\\outageCustomer.log'
 configFilePath =  '.\\configs\\OutageCustomer.ini'
@@ -56,22 +57,22 @@ def runScript(log,config):
         print "Spatial Join Complete"
 
         #Join the spatial join to the source data and copy the customer count information
-        Utilities.JoinAndCalc(outageAreaLayer,"OBJECTID",outageAreaJoinedToEvents,"TARGET_FID",[("Join_Count",outageAreaCustOutField)])
+        helper.JoinAndCalc(outageAreaLayer,"OBJECTID",outageAreaJoinedToEvents,"TARGET_FID",[("Join_Count",outageAreaCustOutField)])
 
         print "Outage Counts Calculated"
 
-        if Utilities.FieldExist(outageAreaLayer,[outageAreaCustInField,outageAreaTotCustField]):
+        if helper.FieldExist(outageAreaLayer,[outageAreaCustInField,outageAreaTotCustField]):
             # Process: Calc Number In
             arcpy.CalculateField_management(outageAreaLayer, outageAreaCustInField, "!" + outageAreaTotCustField +"!- !" + outageAreaCustOutField + "!", "PYTHON_9.3", "")
             print "Number of people in service calculated"
 
-        if Utilities.FieldExist(outageAreaLayer,[outageAreaCustInField,outageAreaTotCustField,outageAreaPercOutField]):
+        if helper.FieldExist(outageAreaLayer,[outageAreaCustInField,outageAreaTotCustField,outageAreaPercOutField]):
 
             # Process: Calc Percent Out
             arcpy.CalculateField_management(outageAreaLayer, outageAreaPercOutField, "calc( !" + outageAreaCustOutField +"!, !" + outageAreaTotCustField +"! )", "PYTHON_9.3", "def calc(numout,numserv):\\n  if numout == 0:\\n    return 0\\n  else:\\n    return round(float((float(numout) / float(numserv)) *100),2)")
             print "Percentage out calculated"
 
-        if Utilities.FieldExist(outageAreaLayer,[outageAreaRptDate[0]]):
+        if helper.FieldExist(outageAreaLayer,[outageAreaRptDate[0]]):
             # Process: Set Time
             tz = time.timezone
             dateExp = "import time\\nimport datetime\\nfrom time import mktime\\nfrom datetime import datetime\\ndef calc(dt):\\n  return datetime.fromtimestamp(mktime(time.strptime(str(dt), '" + str(outageAreaRptDate[1]) + "')) + " + str(tz) + ")"
@@ -80,35 +81,29 @@ def runScript(log,config):
             print "Report time set"
 
 
-        fs = services.FeatureService(url=outageURL,
+        fs = layer.FeatureLayer(url=outageURL,
                         username=username,
                         password=password)
 
-        fs.deleteFeatures(outageDelSQL)
+        fs.deleteFeatures(sql=outageDelSQL)
         print "Outage Polygon layer cleared"
 
         results = fs.addFeatures(fc=outageAreaLayer)
         print "Outage Polygon layer features added"
 
 
-    except FeatureServiceError,e:
-        line, filename, synerror = Utilities.trace()
-        print "error on line: %s" % line
-        print "error in file name: %s" % filename
-        print "with error message: %s" % synerror
-        print datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    except UtilitiesError, e:
-        line, filename, synerror = Utilities.trace()
+    except helper.HelperError,e:
+        line, filename, synerror = helper.trace()
         print "error on line: %s" % line
         print "error in file name: %s" % filename
         print "with error message: %s" % synerror
         print "Add. Error Message: %s" % e
         print datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
+
     except arcpy.ExecuteError:
 
-        line, filename, synerror = Utilities.trace()
+        line, filename, synerror = helper.trace()
         print "error on line: %s" % line
         print "error in file name: %s" % filename
         print "with error message: %s" % synerror
@@ -117,7 +112,7 @@ def runScript(log,config):
 
 
     except:
-        line, filename, synerror = Utilities.trace()
+        line, filename, synerror = helper.trace()
         print ("error on line: %s" % line)
         print ("error in file name: %s" % filename)
         print ("with error message: %s" % synerror)
@@ -136,7 +131,7 @@ if __name__ == "__main__":
 
     #Change the output to both the windows and log file
     original = sys.stdout
-    sys.stdout = Utilities.Tee(sys.stdout, log)
+    sys.stdout = helper.Tee(sys.stdout, log)
 
     print "***************Script Started******************"
     print datetime.datetime.now().strftime(dateTimeFormat)

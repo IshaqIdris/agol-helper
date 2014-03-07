@@ -4,12 +4,13 @@ import arcpy
 import sys, os, datetime
 import ConfigParser
 
-from agol import Utilities
-from agol import services
-
 from arcpy import env
-from agol.Utilities import FeatureServiceError
-from agol.Utilities import UtilitiesError
+
+from agol import common
+from agol import featureservice
+from agol import layer
+
+from arcpyhelper import helper
 
 logFileName ='.\\logs\\UpdatePressureZonesPrev.log'
 configFilePath =  '.\\configs\\UpdatePressureZonesPrev.ini'
@@ -47,10 +48,10 @@ def runScript(log,config):
             print "Cannot find Archive Service, exiting"
             sys.exit()
 
-        Utilities.currentToPrevious(inputData,prevFields)
+        helper.currentToPrevious(inputData,prevFields)
         print "Existing data moved to previous fields"
 
-        Utilities.JoinAndCalc(inputData,inputJoinField,joinData,joinDataJoinField,copyFields)
+        helper.JoinAndCalc(inputData,inputJoinField,joinData,joinDataJoinField,copyFields)
         print "Data joined and calculated"
 
         #Save results to historical service
@@ -67,25 +68,18 @@ def runScript(log,config):
 
 
 
-    except FeatureServiceError,e:
-        line, filename, synerror = Utilities.trace()
+    except helper.HelperError,e:
+        line, filename, synerror = helper.trace()
         print "error on line: %s" % line
         print "error in file name: %s" % filename
         print "with error message: %s" % synerror
         print "Add. Error Message: %s" % e
         print datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    except UtilitiesError, e:
-        line, filename, synerror = Utilities.trace()
-        print "error on line: %s" % line
-        print "error in file name: %s" % filename
-        print "with error message: %s" % synerror
-        print "Add. Error Message: %s" % e
-        print datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
     except arcpy.ExecuteError:
 
-        line, filename, synerror = Utilities.trace()
+        line, filename, synerror = helper.trace()
         print "error on line: %s" % line
         print "error in file name: %s" % filename
         print "with error message: %s" % synerror
@@ -94,7 +88,7 @@ def runScript(log,config):
 
 
     except:
-        line, filename, synerror = Utilities.trace()
+        line, filename, synerror = helper.trace()
         print ("error on line: %s" % line)
         print ("error in file name: %s" % filename)
         print ("with error message: %s" % synerror)
@@ -113,7 +107,7 @@ if __name__ == "__main__":
 
     #Change the output to both the windows and log file
     original = sys.stdout
-    sys.stdout = Utilities.Tee(sys.stdout, log)
+    sys.stdout = helper.Tee(sys.stdout, log)
 
     print "***************Script Started******************"
     print datetime.datetime.now().strftime(dateTimeFormat)
