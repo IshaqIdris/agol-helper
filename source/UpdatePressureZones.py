@@ -43,7 +43,7 @@ def runScript(log,config):
             print "Input Data Does Not Exist, exiting"
             sys.exit()
 
-        fs = services.FeatureService(url=reportArchiveURL,username=username,password=password)
+        fs = layer.FeatureLayer(url=reportArchiveURL,username=username,password=password)
         if fs == None:
             print "Cannot find Archive Service, exiting"
             sys.exit()
@@ -60,7 +60,7 @@ def runScript(log,config):
 
         #Update Current service if used
         if createCurrent == "True":
-            fs.url = reportCurrentURL
+            fs = layer.FeatureLayer(url=reportCurrentURL,username=username,password=password)
             fs.deleteFeatures(deleteSQL)
             print "Current service reset"
             fs.addFeatures(inputData)
