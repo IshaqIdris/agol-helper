@@ -13,7 +13,7 @@ from agol import layer
 from arcpyhelper import helper
 
 logFileName ='.\\logs\\UpdatePressureZonesPrev.log'
-configFilePath =  '.\\configs\\UpdatePressureZonesPrev.ini'
+configFilePath =  '.\\configs\\___UpdatePressureZonesPrev.ini'
 dateTimeFormat = '%Y-%m-%d %H:%M'
 
 def runScript(log,config):
@@ -55,15 +55,15 @@ def runScript(log,config):
         print "Data joined and calculated"
 
         #Save results to historical service
-        fs.addFeatures(inputData)
+        fs.addFeatures(fc=inputData)
         print "Historical data updated"
 
         #Update Current service if used
         if createCurrent == "True":
             fs = layer.FeatureLayer(url=reportCurrentURL,username=username,password=password)
-            fs.deleteFeatures(deleteSQL)
+            fs.deleteFeatures(sql=deleteSQL)
             print "Current service reset"
-            fs.addFeatures(inputData)
+            fs.addFeatures(fc=inputData)
             print "Current service updated"
 
 

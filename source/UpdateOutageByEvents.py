@@ -96,7 +96,10 @@ def runScript(log,config):
 
         print "Outage Polygon layer features added"
 
-        fs.url = eventsURL
+
+        fs = layer.FeatureLayer(url=eventsURL,
+                        username=username,
+                        password=password)
         fs.deleteFeatures(eventDelSQL)
 
         print "Event location layer cleared"
