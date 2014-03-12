@@ -567,6 +567,45 @@ class Feature(object):
         else:
             raise TypeError("Invalid Input, only dictionary of string allowed")
     #----------------------------------------------------------------------
+    def set_value(self, field_name, value):
+        """ sets an attribute value for a given field name """
+        if field_name in self.fields:
+            self._dict['attributes'][field_name] = value
+            self._json = json.dumps(self._dict)
+        elif field_name.upper() in ['SHAPE', 'SHAPE@', "GEOMETRY"]:
+            if isinstance(value, Geometry):
+                if isinstance(value, Point):
+                    self._dict['geometry'] = {                    
+                    "x" : value.asDictionary['x'],
+                    "y" : value.asDictionary['y']
+                    }
+                elif isinstance(value, MultiPoint):
+                    self._dict['geometry'] = {                    
+                        "points" : value.asDictionary['points']
+                    }
+                elif isinstance(value, Polyline):
+                    self._dict['geometry'] = {
+                        "paths" : value.asDictionary['paths']
+                    }
+                elif isinstance(value, Polygon):
+                    self._dict['geometry'] = {
+                        "rings" : value.asDictionary['rings']
+                    }                    
+                else:
+                    return False
+                self._json = json.dumps(self._dict)
+        else:
+            return False
+        return True
+    #----------------------------------------------------------------------
+    def get_value(self, field_name):
+        """ returns a value for a given field name """
+        if field_name in self.fields:
+            return self._dict['attributes'][field_name]
+        elif field_name.upper() in ['SHAPE', 'SHAPE@', "GEOMETRY"]:
+            return self._dict['geometry']
+        return None
+    #----------------------------------------------------------------------
     @property
     def asDictionary(self):
         """returns the feature as a dictionary"""

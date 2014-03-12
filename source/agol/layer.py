@@ -695,6 +695,41 @@ class FeatureLayer(BaseAGOLClass):
                                          out_name=os.path.basename(out_path)
                                          )
             return common.insert_rows(fc, result_features, fields)
+    #----------------------------------------------------------------------
+    def updateFeature(self, 
+                      features,
+                      gdbVersion=None,
+                      rollbackOnFailure=True):
+        """ 
+           updates an existing feature in a feature service layer 
+           Input:
+              feature - feature object(s) to get updated.  A single feature
+                        or a list of feature objects can be passed
+           Output:
+              dictionary of result messages
+        """  
+        params = {
+            "f" : "json",
+            "rollbackOnFailure" : rollbackOnFailure
+        }
+        if gdbVersion is not None:
+            params['gdbVersion'] = gdbVersion
+        if self._token is not None:
+            params['token'] = self._token
+        if isinstance(features, common.Feature):
+            params['features'] = [features.asDictionary]
+        elif isinstance(features, list):
+            vals = []
+            for feature in features:
+                if isinstance(feature, common.Feature):
+                    vals.append(feature.asDictionary)
+            params['features'] = vals
+        else:
+            return {'message' : "invalid inputs"}
+        updateURL = self._url + "/updateFeatures"
+        res = self._do_post(url=updateURL, 
+                            param_dict=params)
+        return res
     #----------------------------------------------------------------------    
     def deleteFeatures(self, sql):
         """ removes 1:n features based on a sql statement 
@@ -831,3 +866,5 @@ class FeatureLayer(BaseAGOLClass):
 class TableLayer(FeatureLayer):
     """Table object is exactly like FeatureLayer object"""
     pass
+
+
