@@ -334,16 +334,3 @@ def patch_http_response_read(func):
     return inner
 httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
 
-if __name__ == "__main__":
-    p = AGOL(username="AndrewSolutions", password="fujiFUJI1")
-    file_path = r"C:\temp\test.csv"
-    #print p.addFile(file_path, agol_type="CSV", name="test data", tags="CSV", description="NA")
-    mxd_path = r"c:\temp\TimeZones.mxd"
-    ## PASSED - print p.getUserContent()
-    ## PASSED - print p.password
-    ## PASSED - print p.username
-    ## PASSED - print p.generate_token()
-    ## PASSED - print p.createFolder("TESTFOLDER")
-    ## PASSED - print p.deleteFolder("52a45e7c1f7c4c678b7012b27c771714")
-    p.publish_to_agol(mxd_path,"TimeZones")
-    #print 'fin'
