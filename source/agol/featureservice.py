@@ -36,6 +36,8 @@ class FeatureService(BaseAGOLClass):
     _tables = None
     _enableZDefaults = None
     _zDefault = None
+    _size = None
+    _xssPreventionInfo = None
     #----------------------------------------------------------------------
     def __init__(self, url,  token_url=None, username=None, password=None):
         """Constructor"""
@@ -55,91 +57,30 @@ class FeatureService(BaseAGOLClass):
             param_dict = {"f": "json",
                           "token" : self._token
                           }            
-        json_dict = self._do_get(self._url, param_dict)        
-        if json_dict.has_key("currentVersion"):
-            self._currentVersion = json_dict['currentVersion']
-        else:
-            self._currentVersion = "Not Supported"
-        if json_dict.has_key("serviceDescription"):
-            self._serviceDescription = json_dict['serviceDescription']
-        else:
-            self._serviceDescription = "Not Supported"
-        if json_dict.has_key("hasVersionedData"):
-            self._hasVersionedData = json_dict['hasVersionedData']
-        else:
-            self._hasVersionedData = "Not Supported"
-        if json_dict.has_key('supportsDisconnectedEditing'):
-            self._supportsDisconnectedEditing = json_dict['supportsDisconnectedEditing']
-        else:
-            self._supportsDisconnectedEditing = "Not Supported"
-        if json_dict.has_key("hasStaticData"):
-            self._hasStaticData = json_dict['hasStaticData']
-        else:
-            self._hasStaticData = "Not Supported"
-        if json_dict.has_key("maxRecordCount"):
-            self._maxRecordCount = json_dict['maxRecordCount']
-        else:
-            self._maxRecordCount = "Not Supported"
-        if json_dict.has_key("supportedQueryFormats"):
-            self._supportedQueryFormats = json_dict['supportedQueryFormats']
-        else:
-            self._supportedQueryFormats = "Not Supported"
-        if json_dict.has_key("capabilities"):
-            self._capabilities = json_dict['capabilities']
-        else:
-            self._capabilities = "Not Supported"
-        if json_dict.has_key("description"):
-            self._description = json_dict['description']
-        else:
-            self._description = "Not Supported"
-        if json_dict.has_key("copyrightText"):
-            self._copyrightText = json_dict['copyrightText']
-        else:
-            self._copyrightText = "Not Supported"
-        if json_dict.has_key("spatialReference"):
-            self._spatialReference = json_dict['spatialReference']
-        else:
-            self._spatialReference = "Not Supported"
-        if json_dict.has_key("initialExtent"):
-            self._initialExtent = json_dict['initialExtent']
-        else:
-            self._initialExtent = "Not Supported"
-        if json_dict.has_key("fullExtent"):
-            self._fullExtent = json_dict['fullExtent']
-        else:
-            self._fullExtent = "Not Supported"
-        if json_dict.has_key("allowGeometryUpdates"):
-            self._allowGeometryUpdates = json_dict['allowGeometryUpdates']
-        else:
-            self._allowGeometryUpdates = "Not Supported"
-        if json_dict.has_key("units"):
-            self._units = json_dict['units']
-        else:
-            self._units = "Not Supported"
-        if json_dict.has_key("syncEnabled"):
-            self._syncEnabled = json_dict['syncEnabled']
-        else:
-            self._syncEnabled = False
-        if json_dict.has_key("syncCapabilities"):
-            self._syncCapabilities = json_dict['syncCapabilities']
-        else:
-            self._syncCapabilities = "Not Supported"
-        if json_dict.has_key("editorTrackingInfo"):
-            self._editorTrackingInfo = json_dict['editorTrackingInfo']
-        else:
-            self._editorTrackingInfo = ""
-        if json_dict.has_key("documentInfo"):
-            self._documentInfo = json_dict['documentInfo']
-        else:
-            self._documentInfo = ""
-        if json_dict.has_key("enableZDefaults"):
-            self._enableZDefaults = json_dict['enableZDefaults']
-        else:
-            self._enableZDefaults = False
-        if json_dict.has_key("zDefault"):
-            self._zDefault = json_dict['zDefault']
-        else:
-            self._zDefault = ""
+        json_dict = self._do_get(self._url, param_dict) 
+        attributes = [attr for attr in dir(self) 
+                    if not attr.startswith('__') and \
+                    not attr.startswith('_')]          
+        for k,v in json_dict.iteritems(): 
+            if k in attributes:
+                setattr(self, "_"+ k, json_dict[k])
+            else:
+                print k, " - attribute not implmented."     
+    #----------------------------------------------------------------------
+    @property
+    def xssPreventionInfo(self):
+        """returns the xssPreventionInfo information """
+        if self._xssPreventionInfo is None:
+            self.__init()
+        return self._xssPreventionInfo
+    #----------------------------------------------------------------------
+    @property
+    def size(self):
+        """returns the size parameter"""
+        if self._size is None:
+            self.__init()
+        return self._size
+        
     #----------------------------------------------------------------------
     def refresh_service(self):
         """ repopulates the properties of the service """
@@ -388,6 +329,96 @@ class FeatureService(BaseAGOLClass):
             params['time'] = timeFilter.filter
         return self._do_get(url=qurl, param_dict=params)
     #----------------------------------------------------------------------
+    def query_related_records(self,
+                              objectIds,
+                              relationshipId,
+                              outFields="*",
+                              definitionExpression=None,
+                              returnGeometry=True,
+                              maxAllowableOffset=None,
+                              geometryPrecision=None,
+                              outWKID=None,
+                              gdbVersion=None,
+                              returnZ=False,
+                              returnM=False):
+        """
+           The Query operation is performed on a feature service layer 
+           resource. The result of this operation are feature sets grouped 
+           by source layer/table object IDs. Each feature set contains 
+           Feature objects including the values for the fields requested by
+           the user. For related layers, if you request geometry 
+           information, the geometry of each feature is also returned in 
+           the feature set. For related tables, the feature set does not 
+           include geometries.
+           Inputs:
+              objectIds - the object IDs of the table/layer to be queried
+              relationshipId - The ID of the relationship to be queried.
+              outFields - the list of fields from the related table/layer 
+                          to be included in the returned feature set. This 
+                          list is a comma delimited list of field names. If
+                          you specify the shape field in the list of return
+                          fields, it is ignored. To request geometry, set 
+                          returnGeometry to true.
+                          You can also specify the wildcard "*" as the 
+                          value of this parameter. In this case, the result
+                          s will include all the field values.
+              definitionExpression - The definition expression to be 
+                                     applied to the related table/layer. 
+                                     From the list of objectIds, only those
+                                     records that conform to this 
+                                     expression are queried for related 
+                                     records.
+              returnGeometry - If true, the feature set includes the 
+                               geometry associated with each feature. The 
+                               default is true.
+              maxAllowableOffset - This option can be used to specify the 
+                                   maxAllowableOffset to be used for 
+                                   generalizing geometries returned by the 
+                                   query operation. The maxAllowableOffset 
+                                   is in the units of the outSR. If outSR 
+                                   is not specified, then 
+                                   maxAllowableOffset is assumed to be in 
+                                   the unit of the spatial reference of the
+                                   map.
+              geometryPrecision - This option can be used to specify the 
+                                  number of decimal places in the response 
+                                  geometries.
+              outWKID - The spatial reference of the returned geometry.
+              gdbVersion - The geodatabase version to query. This parameter
+                           applies only if the isDataVersioned property of 
+                           the layer queried is true.
+              returnZ - If true, Z values are included in the results if 
+                        the features have Z values. Otherwise, Z values are
+                        not returned. The default is false.
+              returnM - If true, M values are included in the results if 
+                        the features have M values. Otherwise, M values are
+                        not returned. The default is false.
+        """
+        params = {
+            "f" : "json",
+            "objectIds" : objectIds,
+            "relationshipId" : relationshipId,
+            "outFields" : outFields,
+            "returnGeometry" : returnGeometry,
+            "returnM" : returnM,
+            "returnZ" : returnZ
+        }
+        if self._token is not None:
+            params['token'] = self._token
+        if gdbVersion is not None:
+            params['gdbVersion'] = gdbVersion
+        if definitionExpression is not None:
+            params['definitionExpression'] = definitionExpression
+        if outWKID is not None:
+            params['outSR'] = common.SpatialReference(outWKID).asDictionary
+        if maxAllowableOffset is not None:
+            params['maxAllowableOffset'] = maxAllowableOffset
+        if geometryPrecision is not None:
+            params['geometryPrecision'] = geometryPrecision
+        quURL = self._url + "/queryRelatedRecords"
+        res = self._do_get(url=quURL, param_dict=params)
+        return res
+    #----------------------------------------------------------------------
     @property
     def replicas(self):
         """ returns all the replicas for a feature service """
@@ -505,38 +536,3 @@ class FeatureService(BaseAGOLClass):
             
         return "Not Supported"
         
-        
-#if __name__ == "__main__":
-    #username = "AndrewSolutions"
-    #password = "fujiFUJI1"
-    #url = "http://services2.arcgis.com/PWJUSsdoJDp7SgLj/ArcGIS/rest/services/GridIndexFeatures/FeatureServer"
-    #fs = FeatureService(url, username=username, password=password)
-    #lds = LayerDefinitionFilter()
-    #lds.addFilter(0, where="FID<6")
-    #print fs.query(layerDefsFilter=lds)
-    #print fs.createReplica(replicaName="andrew", layers=0, 
-                           #returnAsFeatureClass=True, 
-                          #out_path=r"c:\replicas")
-    ##print fs.fullExtent
-    ##print fs.layers[0].name
-    ##print fs.tables
-    ##print 'finished'
-    ###
-    ##for replica in fs.replicas:
-        ##print replica
-        ##fs.unRegisterReplica(replica_id=replica['replicaID'])
-        ##print 'erased'
-    ##fs.refresh_service()
-    ##print fs.replicas
-    ##result = fs.createReplica(replicaName="andrewtest", layers="0", returnAttachments=True,
-                              ##returnAsFeatureClass=False,
-                              ##out_path=r"c:\temp\zip_file_test")
-    ##print result
-    ##print 'stop'
-    ###attributes = [attr for attr in dir(fs) 
-                      ###if not attr.startswith('__') or not attr.startswith('_')]    
-    ###for a in attributes:
-        ###if a.startswith('_'):
-            ###pass
-        ###else:
-            ##print a, getattr(fs, a)        
