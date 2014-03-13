@@ -43,65 +43,61 @@ def runScript(log,config):
             arcpy.AddMessage("Please specify a input parcel layer in the configuration file, exiting")
             sys.exit()
 
-        if arcpy.Exists(username) == False:
-            print "Please specify a ArcGIS Online Username (username =)in the configuration file, exiting"
-            arcpy.AddMessage("Please specify a ArcGIS Online Username in the configuration file, exiting")
-            sys.exit()
+        if username == "":
+	        print "Please specify a ArcGIS Online Username (username =)in the configuration file, exiting"
+	        arcpy.AddMessage(username)
+	        sys.exit()
 
-        if arcpy.Exists(password) == False:
-            print "Please specify a ArcGIS Online password (password =)in the configuration file, exiting"
-            arcpy.AddMessage("Please specify a ArcGIS Online password in the configuration file, exiting")
-            sys.exit()
+	    if password == "":
+	        print "Please specify a ArcGIS Online password (password =)in the configuration file, exiting"
+	        arcpy.AddMessage(password)
+	        sys.exit()
 
-        if arcpy.Exists(deleteSQL) == False:
-            print "Please specify a SQL query (CVTTXDSCRP = 'some value') in the configuration file, exiting"
-            arcpy.AddMessage("Please specify a SQL query (CVTTXDSCRP = 'some value') in the configuration file, exiting")
-            sys.exit()
+	    if deleteSQL == "":
+	        print "Please specify a SQL query (CVTTXDSCRP = 'some value') in the configuration file, exiting"
+	        arcpy.AddMessage("Please specify a SQL query (CVTTXDSCRP = 'some value') in the configuration file, exiting")
+	        sys.exit()
 
 
-        fs = services.FeatureService(url=reportCurrentURL,username=username,password=password)
+        fs = layer.FeatureLayer (url=url,username=username,password=password)
         if fs == None:
             print "Cannot find or connect to service, make sure service is accessible"
             arcpy.AddMessage("Cannot find or connect to service, make sure service is accessible")
             sys.exit()
 
-        # Update Current service if used - see the services helper in the agolhelper folder
-
-        fs.url = reportCurrentURL
-
-    # Delete existing dataset that matches the community parcel schema
+        # Delete existing dataset that matches the community parcel schema
         arcpy.management.TruncateTable(CommunityParcelsLocalCopy)
         print "Cleaning up local parcel data"
 
-    # Append new parcels into the community parcels schema, field map your data into the community schema.  Add local data field names after the "#" in the list.
-    # For example, for STATEAREA "STATEAREA" true true false 50 Text 0 0 ,First,#,LocalParcels,TotalAcres,-1,-1  The local Parcels field name from STATEDAREA (community parcels schema) is TotalAcres.
+        # Append new parcels into the community parcels schema, field map your data into the community schema.  Add local data field names after the "#" in the list.
+        # For example, for STATEAREA "STATEAREA" true true false 50 Text 0 0 ,First,#,LocalParcels,TotalAcres,-1,-1  The local Parcels field name from STATEDAREA (community parcels schema) is TotalAcres.
         Field_Map = arcpy.GetParameterAsText(0)
         arcpy.Append_management(LocalParcels,CommunityParcelsLocalCopy,"NO_TEST",
             """
-                LOWPARCELID "LOWPARCELID" true true false 50 Text 0 0 ,First,#,LocalParcels,Assessment,-1,-1;
-                PARCELID "PARCELID" true true false 50 Text 0 0 ,First,#,LocalParcels,PARCELID,-1,-1;
+                LOWPARCELID "LOWPARCELID" true true false 50 Text 0 0 ,First,#;
+                PARCELID "PARCELID" true true false 50 Text 0 0 ,First,#;
                 FLOORDESIG "FLOORDESIG" true true false 50 Text 0 0 ,First,#;
                 SHAPE_Length "SHAPE_Length" false true true 8 Double 0 0 ,First,#;
-                SHAPE_Area "SHAPE_Area" false true true 8 Double 0 0 ,First,#,LocalParcels,Shape_Area,-1,-1;
-                STATEAREA "STATEAREA" true true false 50 Text 0 0 ,First,#,LocalParcels,TotalAcres,-1,-1;
+                SHAPE_Area "SHAPE_Area" false true true 8 Double 0 0 ,First,#;
+                STATEAREA "STATEAREA" true true false 50 Text 0 0 ,First,#;
                 CNVYNAME "CNVYNAME" LocalParcels,Subdivisio;
                 USEDCD "USEDCD" true true false 50 Text 0 0 ,First,#;
                 USEDSCRP "USEDSCRP" LocalParcels,PropType;
-                CVTTXDSCRP "CVTTXDSCRP" true true false 50 Text 0 0 ,First,#,LocalParcels, COUNTYCD, -1,-1;
+                CVTTXDSCRP "CVTTXDSCRP" true true false 50 Text 0 0 ,First,#;
                 IMPROVED "IMPROVED" true true false 50 Text 0 0 ,First,#;
                 OWNTYPE "OWNTYPE" true true false 50 Text 0 0 ,First,#;
                 SITEADRESS "SITEADRESS" true true false 50 Text 0 0 ,First,#;
-                OWNERNME1 "OWNERNME1" true true false 50 Text 0 0 ,First,#,LocalParcels,OwnerName,-1,-1;
+                OWNERNME1 "OWNERNME1" true true false 50 Text 0 0 ,First,#;
                 OWNERNME2 "OWNERNME2" true true false 50 Text 0 0 ,First,#;
-                PSTLADRESS "PSTLADRESS" true true false 50 Text 0 0 ,First,#,LocalParcels,OwnerAdd_1,-1,-1;
+                PSTLADRESS "PSTLADRESS" true true false 50 Text 0 0 ,First,#;
                 USPSBOX "USPSBOX" true true false 50 Text 0 0 ,First,#;
-                PSTLCITY "PSTLCITY" true true false 50 Text 0 0 ,First,#,LocalParcels,OwnerCity,-1,-1;
-                PSTLSTATE "PSTLSTATE" true true false 50 Text 0 0 ,First,#, LocalParcels, OwnerState,-1,-1;
-                PSTLZIP "PSTLZIP" true true false 50 Text 0 0 ,First,#,LocalParcels,OwnerZipCo,-1,1-;
+                PSTLCITY "PSTLCITY" true true false 50 Text 0 0 ,First,#;
+                PSTLSTATE "PSTLSTATE" true true false 50 Text 0 0 ,First,#;
+                PSTLZIP "PSTLZIP" true true false 50 Text 0 0 ,First,#;
                 PSTLINTER "PSTLINTER" true true false 50 Text 0 0 ,First,#;
-                LNDVALUE "LNDVALUE" true true false 50 Text 0 0 ,First,#,LocalParcels,TotalLandV,-1,-1;
-                IMPVALUE "IMPVALUE" true true false 50 Text 0 0 ,First,#,LocalParcels,TotalBuild,-1,-1;
-                CNTASSDVAL "CNTASSDVAL" true true false 50 Text 0 0 ,First,#,LocalParcels,TotalValue,-1,-1;
+                LNDVALUE "LNDVALUE" true true false 50 Text 0 0 ,First,#;
+                IMPVALUE "IMPVALUE" true true false 50 Text 0 0 ,First,#;
+                CNTASSDVAL "CNTASSDVAL" true true false 50 Text 0 0 ,First,#;
                 CNTTXBLVAL "CNTTXBLVAL" true true false 50 Text 0 0 ,First,#;
                 SALEPRICE "SALEPRICE" true true false 50 Text 0 0 ,First,#;
                 SALEDATE "SALEDATE" true true false 50 Text 0 0 ,First,#;
@@ -128,8 +124,8 @@ def runScript(log,config):
         ##        arcpy.AddMessage("Add Attribute Indexes - Performance")
 
 
-        fs._getOIDField()
-        value1=fs.OIDS(deleteSQL)
+        fs.objectIdField()
+        value1=fs.query(sql=deleteSQL,returnIDsOnly=true)
         myids=value1 ['objectIds']
 
         minId = min(myids)
@@ -147,7 +143,7 @@ def runScript(log,config):
             if oids == '':
                 continue
             else:
-                fs.deleteFeaturesOID(oids)
+                fs.applyEdits(deleteFeatures=oids)
             i+=chunkSize
             print i
             #print len(myids)
@@ -156,7 +152,7 @@ def runScript(log,config):
             arcpy.AddMessage("Deleted: {0:2f}%".format ( i/ float(len(myids))*100))
         print "Community Parcels upload Started"
         arcpy.AddMessage("Community Parcels upload started, please be patient, may take +- 5 minutes per 80,000 parcels.  For future consideration, please run tool during non-peak internet usage")
-        fs.addFeatures(CommunityParcelsLocalCopy)
+        fs.addFeatures(fc=CommunityParcelsLocalCopy)
 
     except helper.HelperError,e:
         line, filename, synerror = helper.trace()
