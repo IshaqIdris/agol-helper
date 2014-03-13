@@ -31,20 +31,6 @@ def runScript(log,config):
         #out_path=r'C:\temp\temp.gdb\temp1'
 
 
-##        layer = os.path.basename(url)
-##        url = os.path.dirname(url)
-##
-##        fs = featureservice.FeatureService(url, username=username, password=password)
-##        print fs.createReplica(replicaName="impactProcessing",
-##                           layers=layer,
-##                           returnAttachments=True,
-##                           returnAsFeatureClass=True,
-##                           out_path=out_path)
-##
-##
-
-
-
         fs = layer.FeatureLayer(url=url,username=username,password=password)
         if fs == None:
             print "Cannot find Service, exiting"
@@ -81,7 +67,7 @@ def runScript(log,config):
         fs.deleteFeatures(sql=sql)
         fs.addFeatures(fc=fc)
         print "Scipt Complete"
-       # arcpy.Delete_management(out_path)
+        arcpy.Delete_management(out_path)
 
 
 
