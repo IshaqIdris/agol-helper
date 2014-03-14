@@ -1,7 +1,8 @@
 # AGOL Tools
 
-A set of python tools to assist working with AGOL feature services and AGOL.  A series of scripts are provided to demonstrate how to use this library.  If you are constructed your own process, you can start with these or use the _ExampleBaseSctructure.py script.  This provides the framework used by all the examples.
-
+A set of python tools to assist working with AGOL feature services and AGOL.  A series of scripts are provided to demonstrate how to use this library.  
+For focused examples, sample data, and other implementations, visit the [solution-data-automation](http://github.com/MikeMillerGIS/solutions-data-automation/)
+ 
 
 ## Features
 
