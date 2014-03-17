@@ -67,7 +67,7 @@ class FeatureLayer(BaseAGOLClass):
                  token_url=None):
         """Constructor"""
         self._url = url
-        self_token_url = token_url
+        self._token_url = token_url
         self._username = username
         self._password = password
         if not username is None and\
