@@ -1,8 +1,17 @@
 import os
+import copy
 import json
 import arcpy
 from base import Geometry 
 import datetime
+import calendar
+
+#----------------------------------------------------------------------
+def _date_handler(obj):
+    if isinstance(obj, datetime.datetime):
+        return calendar.timegm(obj.utctimetuple()) * 1000
+    else:
+        return obj    
 #----------------------------------------------------------------------
 def get_attachment_data(attachmentTable, sql,
                         nameField="ATT_NAME", blobField="DATA",
@@ -63,6 +72,32 @@ def featureclass_to_json(fc):
     desc = arcpy.Describe(featureSet)# this will allow us to use the json property of the feature set
     return json.loads(desc.json)   
 #----------------------------------------------------------------------
+def json_to_featureclass(json_file, out_fc):
+    """ converts a json file (.json) to a feature class """
+    return arcpy.JSONToFeatures_conversion(in_json_file=json_file,
+                                    out_features=out_fc)[0]
+#----------------------------------------------------------------------
+def merge_feature_class(merges, out_fc, cleanUp=True):
+    """ merges featureclass into a single feature class """
+    if cleanUp == False:
+        return arcpy.Merge_management(inputs=merges,
+                                      output=out_fc)[0]
+    else:
+        merged = arcpy.Merge_management(inputs=merges,
+                                        output=out_fc)[0]
+        for m in merges:
+            arcpy.Delete_management(m)
+            del m
+        return merged
+#----------------------------------------------------------------------
+def scratchFolder():
+    """ returns the scratch foldre """
+    return arcpy.env.scratchFolder
+#----------------------------------------------------------------------
+def scratchGDB():
+    """ returns the arcpy scratch file geodatabase """
+    return arcpy.env.scratchGDB
+#----------------------------------------------------------------------
 def getDateFields(fc):
     """
        Returns a list of fields that are of type DATE
@@ -78,34 +113,46 @@ def toDateTime(unix_timestamp):
     unix_timestamp = unix_timestamp/1000
     return datetime.datetime.fromtimestamp(unix_timestamp)
 #----------------------------------------------------------------------
-def insert_rows(fc, features, fields):
+def insert_rows(fc, 
+                features, 
+                fields, 
+                includeOIDField=False, 
+                oidField=None):
     """ inserts rows based on a list features object """
-    date_fields = getDateFields(fc)
     icur = None
+    if includeOIDField:
+        arcpy.AddField_management(fc, "FSL_OID", "LONG")
+        fields.append("FSL_OID")     
     if len(features) > 0:
-        fields.append("SHAPE@")
-        icur = arcpy.da.InsertCursor(fc, fields)
-        for feat in features:
-            row = [""] * len(fields)
-            drow = feat.asRow[0]
-            dfields = feat.fields
-            for field in fields:
-                if field in dfields:
-                    if field in date_fields:
-                        row[fields.index(field)] = toDateTime(drow[dfields.index(field)])
-                    else:
-                        row[fields.index(field)] = drow[dfields.index(field)]
-                del field
-            row[fields.index("SHAPE@")] = feat.geometry
-            icur.insertRow(row)
-            del row
-            del drow
-            del dfields
-            del feat
-        del features
-        icur = None
-        del icur
-        del fields
+        fields.append("SHAPE@")         
+        workspace = _unicode_convert(os.path.dirname(fc))
+        with arcpy.da.Editor(workspace) as edit:
+            date_fields = getDateFields(fc)
+            icur = arcpy.da.InsertCursor(fc, fields)
+            for feat in features:
+                row = [""] * len(fields)
+                drow = feat.asRow[0]
+                dfields = feat.fields
+                for field in fields:
+                    if field in dfields or \
+                       (includeOIDField and field == "FSL_OID"):
+                        if field in date_fields:
+                            row[fields.index(field)] = toDateTime(drow[dfields.index(field)])
+                        elif field == "FSL_OID":
+                            row[fields.index("FSL_OID")] = drow[dfields.index(oidField)]
+                        else:
+                            row[fields.index(field)] = drow[dfields.index(field)]
+                    del field
+                row[fields.index("SHAPE@")] = feat.geometry
+                icur.insertRow(row)
+                del row
+                del drow
+                del dfields
+                del feat
+            del features
+            icur = None
+            del icur
+            del fields
         return fc
     else:
         return fc
@@ -239,7 +286,8 @@ class Point(Geometry):
         """ returns a geometry as JSON """
         value = self._json
         if value is None:
-            value = json.dumps(self.asDictionary)
+            value = json.dumps(self.asDictionary,
+                               default=_date_handler)
             self._json = value
         return self._json
     #----------------------------------------------------------------------
@@ -308,7 +356,8 @@ class MultiPoint(Geometry):
         """ returns a geometry as JSON """
         value = self._json
         if value is None:
-            value = json.dumps(self.asDictionary)
+            value = json.dumps(self.asDictionary,
+                               default=_date_handler)
             self._json = value
         return self._json
     #----------------------------------------------------------------------
@@ -372,7 +421,8 @@ class Polyline(Geometry):
         """ returns a geometry as JSON """
         value = self._json
         if value is None:
-            value = json.dumps(self.asDictionary)
+            value = json.dumps(self.asDictionary,
+                               default=_date_handler)
             self._json = value
         return self._json
     #----------------------------------------------------------------------
@@ -433,7 +483,8 @@ class Polygon(Geometry):
         """ returns a geometry as JSON """
         value = self._json
         if value is None:
-            value = json.dumps(self.asDictionary)
+            value = json.dumps(self.asDictionary,
+                               default=_date_handler)
             self._json = value
         return self._json
     #----------------------------------------------------------------------
@@ -531,7 +582,8 @@ class Envelope(Geometry):
         """ returns a geometry as JSON """
         value = self._json
         if value is None:
-            value = json.dumps(self.asDictionary)
+            value = json.dumps(self.asDictionary,
+                               default=_date_handler)
             self._json = value
         return self._json    
     #----------------------------------------------------------------------
@@ -559,7 +611,8 @@ class Feature(object):
     def __init__(self, json_string):
         """Constructor"""
         if type(json_string) is dict:
-            self._json = json.dumps(json_string)
+            self._json = json.dumps(json_string,
+                                    default=_date_handler)
             self._dict = json_string
         elif type(json_string) is str:
             self._dict = json.loads(json_string)
@@ -571,7 +624,7 @@ class Feature(object):
         """ sets an attribute value for a given field name """
         if field_name in self.fields:
             self._dict['attributes'][field_name] = value
-            self._json = json.dumps(self._dict)
+            self._json = json.dumps(self._dict, default=_date_handler)
         elif field_name.upper() in ['SHAPE', 'SHAPE@', "GEOMETRY"]:
             if isinstance(value, Geometry):
                 if isinstance(value, Point):
@@ -593,7 +646,7 @@ class Feature(object):
                     }                    
                 else:
                     return False
-                self._json = json.dumps(self._dict)
+                self._json = json.dumps(self._dict, default=_date_handler)
         else:
             return False
         return True
@@ -667,3 +720,46 @@ class Feature(object):
             else:
                 self._geomType = "Table"
         return self._geomType
+    @staticmethod
+    def fc_to_features(dataset):
+        """ 
+           converts a dataset to a list of feature objects 
+           Input:
+              dataset - path to table or feature class
+           Output:
+              list of feature objects
+        """
+        desc = arcpy.Describe(dataset)
+        fields = [field.name for field in arcpy.ListFields(dataset) if field.type not in ['Geometry']]
+        non_geom_fields = copy.deepcopy(fields)
+        features = []
+        if hasattr(desc, "shapeFieldName"):
+            fields.append("SHAPE@JSON")
+        del desc
+        with arcpy.da.SearchCursor(dataset, fields) as rows:
+            for row in rows:
+                template = {
+                    "attributes" : dict(zip(non_geom_fields, row))
+                }
+                if "SHAPE@JSON" in fields:
+                    template['geometry'] = \
+                        json.loads(row[fields.index("SHAPE@JSON")])
+                    
+                features.append(
+                    Feature(json_string=_unicode_convert(template))
+                )
+                del row
+        return features    
+#----------------------------------------------------------------------
+def _unicode_convert(obj):
+    """ converts unicode to anscii """
+    if isinstance(obj, dict):
+        return {_unicode_convert(key): \
+                _unicode_convert(value) \
+                for key, value in obj.iteritems()}
+    elif isinstance(obj, list):
+        return [_unicode_convert(element) for element in obj]
+    elif isinstance(obj, unicode):
+        return obj.encode('utf-8')
+    else:
+        return obj     
