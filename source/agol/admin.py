@@ -130,23 +130,14 @@ class AGOL(BaseAGOLClass):
         url = "{}/content/users/{}/addItem".format(self._url,
                                                    self._username)
         parsed = urlparse.urlparse(url)
-        content = open(file_path, 'rb').read()
-        mime = mimetypes.guess_type(file_path)[0]
-        fileName, fileExtension = os.path.splitext(file_path)
-        if mime is None and\
-           fileExtension.lower() == ".csv":
-            mime = "text/csv"
-        elif mime is None and \
-             fileExtension.lower() == ".sd":
-            mime = "File/sd"
-        elif mime is None:
-            mime= "File/%s" % fileExtension.replace('.', '')
+        files = []
+        files.append(('file', file_path, os.path.basename(file_path)))
+
         res = self._post_multipart(host=parsed.hostname,
                                    selector=parsed.path,
-                                   filename=os.path.basename(file_path),
-                                   filetype=mime,
-                                   content=content,
-                                   fields=params)
+                                   files = file,
+                                   fields=params,
+                                   ssl=parsed.scheme.lower() == 'https')
         res = self._unicode_convert(json.loads(res))
         return res
     #----------------------------------------------------------------------
@@ -395,16 +386,20 @@ class AGOL(BaseAGOLClass):
             content = open(thumbnail, 'rb').read()
             parsed = urlparse.urlparse(uURL)
             port = parsed.port
+            files = []
+            files.append(('thumbnail', thumbnail, os.path.basename(thumbnail)))
+
             return self._post_multipart(host=parsed.hostname,
                                        selector=parsed.path,
-                                       filename=os.path.basename(thumbnail),
-                                       filetype=mimetypes.guess_type(thumbnail)[0],
-                                       content=content,
                                        fields=params,
-                                       port=port,
-                                       https=parsed.scheme.lower() == 'https')
+                                       files=files,
+                                       ssl=parsed.scheme.lower() == 'https')
+
         else:
             return self._do_post(url=uURL, param_dict=params)
+
+
+
 
 # This function is a workaround to deal with what's typically described as a
 # problem with the web server closing a connection. This is problem
