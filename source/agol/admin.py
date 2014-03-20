@@ -90,12 +90,25 @@ class Admin(BaseAGOLClass):
     @property
     def services(self):
         """ returns all the service objects in the admin service's page """
+        self._services = []
         params = {
             "f" : "json",
             "token" : self._token
         }
         uURL = self._url + "/services"
-        return self._do_get(url=uURL, param_dict=params)
+        res = self._do_get(url=uURL, param_dict=params)
+        
+        for k, v in res.iteritems():
+            if k == "services":
+                for item in v:
+                    self._services.append(
+                        AdminFeatureService(url=uURL + "/%s.%s" % (item['adminServiceInfo']['name'], 
+                                                                        item['adminServiceInfo']['type']),
+                                            username=self._username,
+                                            password=self._password,
+                                            token_url=self._token_url)
+                                            ) 
+        return self._services
 ########################################################################
 class AdminMapService(BaseAGOLClass):
     """
@@ -190,11 +203,346 @@ class AdminFeatureService(BaseAGOLClass):
     _password = None
     _token_url = None
     _url = None    
+    _xssPreventionInfo = None
+    _size = None
+    _adminServiceInfo = None
+    _initialExtent = None
+    _copyrightText = None
+    _layers = None
+    _syncCapabilities = None
+    _capabilities = None
+    _currentVersion = None
+    _hasVersionedData = None
+    _units = None
+    _supportedQueryFormats = None
+    _maxRecordCount = None
+    _allowGeometryUpdates = None
+    _description = None
+    _hasStaticData = None
+    _fullExtent = None
+    _serviceDescription = None
+    _editorTrackingInfo = None
+    _supportsDisconnectedEditing = None
+    _spatialReference = None
+    _syncEnabled = None
     #----------------------------------------------------------------------
     def __init__(self, url,
              username=None,
              password=None,
              token_url=None):
+        """Constructor"""
+        self._url = url
+        self._token_url = token_url
+        self._username = username
+        self._password = password
+        if not username is None and\
+           not password is None:
+            if not token_url is None:
+                self._token = self.generate_token(tokenURL=token_url)[0]
+            else:
+                self._token = self.generate_token()[0]
+        #self.__init()
+    #----------------------------------------------------------------------
+    def __init(self):
+        """ initializes the service """
+        params = {
+            "f" : "json",
+        }
+        if self._token is not None:
+            params['token'] = self._token
+        json_dict = self._do_get(self._url, params)
+        attributes = [attr for attr in dir(self)
+                      if not attr.startswith('__') and \
+                      not attr.startswith('_')]
+        for k,v in json_dict.iteritems():
+            if k == "layers":
+                self._layers = []
+                for lyr in v:
+                    fl = AdminFeatureServiceLayer(url=self._url + "/%s" % lyr['id'],
+                                             username=self._username,
+                                             password=self._password,
+                                             token_url=self._token_url)
+                    self._layers.append(fl)
+                    del fl
+                    del lyr
+            elif k in attributes:
+                setattr(self, "_"+ k, json_dict[k])
+            else:
+                print k, " - attribute not implmented."
+    #----------------------------------------------------------------------
+    @property
+    def status(self):
+        """ returns the service status """
+        uURL = self._url + "/status"
+        params = {
+            "token" : self._token,
+            "f" : "json"
+        }
+        return self._do_get(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def refresh(self):
+        """ refreshes a service """
+        params = {
+            "f" : "json",
+            "token" : self._token
+        }
+        uURL = self._url + "/refresh"
+        return self._do_get(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    @property
+    def xssPreventionInfo(self):
+        """returns the xssPreventionInfo information """
+        if self._xssPreventionInfo is None:
+            self.__init()
+        return self._xssPreventionInfo
+    #----------------------------------------------------------------------
+    @property
+    def size(self):
+        """returns the size parameter"""
+        if self._size is None:
+            self.__init()
+        return self._size   
+    #----------------------------------------------------------------------
+    @property
+    def maxRecordCount(self):
+        """returns the max record count"""
+        if self._maxRecordCount is None:
+            self.__init()
+        return self._maxRecordCount
+    #----------------------------------------------------------------------
+    @property
+    def supportedQueryFormats(self):
+        """"""
+        if self._supportedQueryFormats is None:
+            self.__init()
+        return self._supportedQueryFormats
+    #----------------------------------------------------------------------
+    @property
+    def capabilities(self):
+        """ returns a list of capabilities """
+        if self._capabilities is None:
+            self.__init()
+        return self._capabilities
+    #----------------------------------------------------------------------
+    @property
+    def description(self):
+        """ returns the service description """
+        if self._description is None:
+            self.__init()
+        return self._description
+    #----------------------------------------------------------------------
+    @property
+    def copyrightText(self):
+        """ returns the copyright text """
+        if self._copyrightText is None:
+            self.__init()
+        return self._copyrightText
+    #----------------------------------------------------------------------
+    @property
+    def spatialReference(self):
+        """ returns the spatial reference """
+        if self._spatialReference is None:
+            self.__init()
+        return self._spatialReference
+    #----------------------------------------------------------------------
+    @property
+    def initialExtent(self):
+        """ returns the initial extent of the feature service """
+        if self._initialExtent is None:
+            self.__init()
+        return self._initialExtent
+    #----------------------------------------------------------------------
+    @property
+    def fullExtent(self):
+        """ returns the full extent of the feature service """
+        if self._fullExtent is None:
+            self.__init()
+        return self._fullExtent
+    #----------------------------------------------------------------------
+    @property
+    def allowGeometryUpdates(self):
+        """ informs the user if the data allows geometry updates """
+        if self._allowGeometryUpdates is None:
+            self.__init()
+        return self._allowGeometryUpdates
+    #----------------------------------------------------------------------
+    @property
+    def units(self):
+        """ returns the measurement unit """
+        if self._units is None:
+            self.__init()
+        return self._units
+    #----------------------------------------------------------------------
+    @property
+    def syncEnabled(self):
+        """ informs the user if sync of data can be performed """
+        if self._syncEnabled is None:
+            self.__init()
+        return self._syncEnabled
+    #----------------------------------------------------------------------
+    @property
+    def syncCapabilities(self):
+        """ type of sync that can be performed """
+        if self._syncCapabilities is None:
+            self.__init()
+        return self._syncCapabilities
+    #----------------------------------------------------------------------
+    @property
+    def editorTrackingInfo(self):
+        """"""
+        if self._editorTrackingInfo is None:
+            self.__init()
+        return self._editorTrackingInfo    
+    #----------------------------------------------------------------------
+    @property
+    def hasStaticData(self):
+        """"""
+        if self._hasStaticData is None:
+            self.__init()
+        return self._hasStaticData
+    
+    #----------------------------------------------------------------------
+    @property
+    def currentVersion(self):
+        """ returns the map service current version """
+        if self._currentVersion is None:
+            self.__init()
+        return self._currentVersion    
+    #----------------------------------------------------------------------
+    @property
+    def serviceDescription(self):
+        """ returns the serviceDescription of the map service """
+        if self._serviceDescription is None:
+            self.__init()
+        return self._serviceDescription  
+    #----------------------------------------------------------------------
+    @property
+    def hasVersionedData(self):
+        """ returns boolean for versioned data """
+        if self._hasVersionedData is None:
+            self.__init()
+        return self._hasVersionedData
+    #----------------------------------------------------------------------
+    @property
+    def supportsDisconnectedEditing(self):
+        """ returns boolean is disconnecting editted supported """
+        if self._supportsDisconnectedEditing is None:
+            self.__init()
+        return self._supportsDisconnectedEditing
+    @property
+    def adminServiceInfo(self):
+        """ returns the admin service information"""
+        if self._adminServiceInfo is None:
+            self.__init()
+        return self._adminServiceInfo
+    @property
+    def layers(self):
+        """ returns the layers for a service """
+        if self._layers is None:
+            self.__init()
+        return self._layers
+    
+########################################################################
+class AdminFeatureServiceLayer(BaseAGOLClass):
+    """
+       The layer resource represents a single feature layer or a non 
+       spatial table in a feature service.  A feature layer is a table or 
+       view with at least one spatial column.  
+       For tables, it provides basic information about the table such as 
+       its id, name, fields, types and templates.
+       For feature layers, in addition to the table information above, it 
+       provides information such as its geometry type, min and max scales, 
+       and spatial reference. 
+       Each type includes information about the type such as the type id, 
+       name, and definition expression.  Sub-types also include a default 
+       symbol and a list of feature templates.
+       Each feature template includes a template name, description and a 
+       prototypical feature.
+       The property supportsRollbackOnFailures will be true to indicate the
+       support for transactional edits.
+       The property maxRecordCount returns the maximum number of records 
+       that will be returned at once for a query.
+       The property capabilities returns Query, Create, Delete, Update, and
+       Editing capabilities. The Editing capability will be included if 
+       Create, Delete or Update is enabled for a Feature Service.
+       Note, query and edit operations are not available on a layer in the 
+       adminstrative view.
+    """
+    _drawingInfo = None
+    _typeIdField = None
+    _advancedQueryCapabilities = None
+    _supportsRollbackOnFailureParameter = None
+    _globalIdField = None
+    _supportsAdvancedQueries = None
+    _id = None
+    _relationships = None
+    _capabilities = None
+    _indexes = None
+    _currentVersion = None
+    _geometryType = None
+    _hasStaticData = None
+    _type = None
+    _supportedQueryFormats = None
+    _isDataVersioned = None
+    _allowGeometryUpdates = None
+    _description = None
+    _defaultVisibility = None
+    _extent = None
+    _objectIdField = None
+    _htmlPopupType = None
+    _types = None
+    _hasM = None
+    _displayField = None
+    _name = None
+    _templates = None
+    _supportsStatistics = None
+    _hasAttachments = None
+    _fields = None
+    _maxScale = None
+    _copyrightText = None
+    _hasZ = None
+    _maxRecordCount = None
+    _minScale = None
+    _drawingInfo = None
+    _typeIdField = None
+    _advancedQueryCapabilities = None
+    _supportsRollbackOnFailureParameter = None
+    _globalIdField = None
+    _supportsAdvancedQueries = None
+    _id = None
+    _relationships = None
+    _capabilities = None
+    _indexes = None
+    _currentVersion = None
+    _geometryType = None
+    _hasStaticData = None
+    _type = None
+    _supportedQueryFormats = None
+    _isDataVersioned = None
+    _allowGeometryUpdates = None
+    _description = None
+    _defaultVisibility = None
+    _extent = None
+    _objectIdField = None
+    _htmlPopupType = None
+    _types = None
+    _hasM = None
+    _displayField = None
+    _name = None
+    _templates = None
+    _supportsStatistics = None
+    _hasAttachments = None
+    _fields = None
+    _maxScale = None
+    _copyrightText = None
+    _hasZ = None
+    _maxRecordCount = None
+    _minScale = None
+    #----------------------------------------------------------------------
+    def __init__(self, url,
+                 username=None,
+                 password=None,
+                 token_url=None):
         """Constructor"""
         self._url = url
         self._token_url = token_url
@@ -225,16 +573,6 @@ class AdminFeatureService(BaseAGOLClass):
             else:
                 print k, " - attribute not implmented."
     #----------------------------------------------------------------------
-    @property
-    def status(self):
-        """ returns the service status """
-        uURL = self._url + "/status"
-        params = {
-            "token" : self._token,
-            "f" : "json"
-        }
-        return self._do_get(url=uURL, param_dict=params)
-    #----------------------------------------------------------------------
     def refresh(self):
         """ refreshes a service """
         params = {
@@ -243,37 +581,281 @@ class AdminFeatureService(BaseAGOLClass):
         }
         uURL = self._url + "/refresh"
         return self._do_get(url=uURL, param_dict=params)
-########################################################################
-class AdminFeatureServiceLayer(BaseAGOLClass):
-    """
-       The layer resource represents a single feature layer or a non 
-       spatial table in a feature service.  A feature layer is a table or 
-       view with at least one spatial column.  
-       For tables, it provides basic information about the table such as 
-       its id, name, fields, types and templates.
-       For feature layers, in addition to the table information above, it 
-       provides information such as its geometry type, min and max scales, 
-       and spatial reference. 
-       Each type includes information about the type such as the type id, 
-       name, and definition expression.  Sub-types also include a default 
-       symbol and a list of feature templates.
-       Each feature template includes a template name, description and a 
-       prototypical feature.
-       The property supportsRollbackOnFailures will be true to indicate the
-       support for transactional edits.
-       The property maxRecordCount returns the maximum number of records 
-       that will be returned at once for a query.
-       The property capabilities returns Query, Create, Delete, Update, and
-       Editing capabilities. The Editing capability will be included if 
-       Create, Delete or Update is enabled for a Feature Service.
-       Note, query and edit operations are not available on a layer in the 
-       adminstrative view.
-    """
+    #----------------------------------------------------------------------
+    @property
+    def advancedQueryCapabilities(self):
+        """ returns the advanced query capabilities """
+        if self._advancedQueryCapabilities is None:
+            self.__init()
+        return self._advancedQueryCapabilities
+    #----------------------------------------------------------------------
+    @property
+    def supportsRollbackOnFailureParameter(self):
+        """ returns if rollback on failure supported """
+        if self._supportsRollbackOnFailureParameter is None:
+            self.__init()
+        return self._supportsRollbackOnFailureParameter
+    #----------------------------------------------------------------------
+    @property
+    def hasStaticData(self):
+        """boolean T/F if static data is present """
+        if self._hasStaticData is None:
+            self.__init()
+        return self._hasStaticData
+    #----------------------------------------------------------------------
+    @property
+    def indexes(self):
+        """gets the indexes"""
+        if self._indexes is None:
+            self.__init()
+        return self._indexes
+    #----------------------------------------------------------------------
+    @property
+    def templates(self):
+        """ gets the template """
+        if self._templates is None:
+            self.__init()
+        return self._templates
+    #----------------------------------------------------------------------
+    @property
+    def allowGeometryUpdates(self):
+        """ returns boolean if geometry updates are allowed """
+        if self._allowGeometryUpdates is None:
+            self.__init()
+        return self._allowGeometryUpdates
+    #----------------------------------------------------------------------
+    @property
+    def globalIdField(self):
+        """ returns the global id field """
+        if self._globalIdField is None:
+            self.__init()
+        return self._globalIdField
 
     #----------------------------------------------------------------------
-    def __init__(self):
-        """Constructor"""
-        pass 
+    @property
+    def objectIdField(self):
+        if self._objectIdField is None:
+            self.__init()
+        return self._objectIdField
+    #----------------------------------------------------------------------
+    @property
+    def currentVersion(self):
+        """ returns the current version """
+        if self._currentVersion is None:
+            self.__init()
+        return self._currentVersion
+    #----------------------------------------------------------------------
+    @property
+    def id(self):
+        """ returns the id """
+        if self._id is None:
+            self.__init()
+        return self._id
+    #----------------------------------------------------------------------
+    @property
+    def name(self):
+        """ returns the name """
+        if self._name is None:
+            self.__init()
+        return self._name
+    #----------------------------------------------------------------------
+    @property
+    def type(self):
+        """ returns the type """
+        if self._type is None:
+            self.__init()
+        return self._type
+    #----------------------------------------------------------------------
+    @property
+    def description(self):
+        """ returns the layer's description """
+        if self._description is None:
+            self.__init()
+        return self._description
+    #----------------------------------------------------------------------
+    @property
+    def definitionExpression(self):
+        """returns the definitionExpression"""
+        if self._definitionExpression is None:
+            self.__init()
+        return self._definitionExpression
+    #----------------------------------------------------------------------
+    @property
+    def geometryType(self):
+        """returns the geometry type"""
+        if self._geometryType is None:
+            self.__init()
+        return self._geometryType
+    #----------------------------------------------------------------------
+    @property
+    def hasZ(self):
+        """ returns if it has a Z value or not """
+        if self._hasZ is None:
+            self.__init()
+        return self._hasZ
+    #----------------------------------------------------------------------
+    @property
+    def hasM(self):
+        """ returns if it has a m value or not """
+        if self._hasM is None:
+            self.__init()
+        return self._hasM
+    #----------------------------------------------------------------------
+    @property
+    def copyrightText(self):
+        """ returns the copyright text """
+        if self._copyrightText is None:
+            self.__init()
+        return self._copyrightText
+    #----------------------------------------------------------------------
+    @property
+    def parentLayer(self):
+        """ returns information about the parent """
+        if self._parentLayer is None:
+            self.__init()
+        return self._parentLayer
+    #----------------------------------------------------------------------
+    @property
+    def subLayers(self):
+        """ returns sublayers for layer """
+        if self._subLayers is None:
+            self.__init()
+        return self._subLayers
+    #----------------------------------------------------------------------
+    @property
+    def minScale(self):
+        """ minimum scale layer will show """
+        if self._minScale is None:
+            self.__init()
+        return self._minScale
+    @property
+    def maxScale(self):
+        """ sets the max scale """
+        if self._maxScale is None:
+            self.__init()
+        return self._maxScale
+    @property
+    def effectiveMinScale(self):
+        if self._effectiveMinScale is None:
+            self.__init()
+        return self._effectiveMinScale
+    @property
+    def effectiveMaxScale(self):
+        if self._effectiveMaxScale is None:
+            self.__init()
+        return self._effectiveMaxScale
+    @property
+    def defaultVisibility(self):
+        if self._defaultVisibility is None:
+            self.__init()
+        return self._defaultVisibility
+    @property
+    def extent(self):
+        if self._extent is None:
+            self.__init()
+        return self._extent
+    @property
+    def timeInfo(self):
+        if self._timeInfo is None:
+            self.__init()
+        return self._timeInfo
+    @property
+    def drawingInfo(self):
+        if self._drawingInfo is None:
+            self.__init()
+        return self._drawingInfo
+    @property
+    def hasAttachments(self):
+        if self._hasAttachments is None:
+            self.__init()
+        return self._hasAttachments
+    @property
+    def htmlPopupType(self):
+        if self._htmlPopupType is None:
+            self.__init()
+        return self._htmlPopupType
+    @property
+    def displayField(self):
+        if self._displayField is None:
+            self.__init()
+        return self._displayField
+    @property
+    def typeIdField(self):
+        if self._typeIdField is None:
+            self.__init()
+        return self._typeIdField
+    @property
+    def fields(self):
+        if self._fields is None:
+            self.__init()
+        return self._fields
+    @property
+    def types(self):
+        if self._types is None:
+            self.__init()
+        return self._types
+    @property
+    def relationships(self):
+        if self._relationships is None:
+            self.__init()
+        return self._relationships
+    @property
+    def maxRecordCount(self):
+        if self._maxRecordCount is None:
+            self.__init()
+            if self._maxRecordCount is None:
+                self._maxRecordCount = 1000
+        return self._maxRecordCount
+    @property
+    def canModifyLayer(self):
+        if self._canModifyLayer is None:
+            self.__init()
+        return self._canModifyLayer
+    @property
+    def supportsStatistics(self):
+        if self._supportsStatistics is None:
+            self.__init()
+        return self._supportsStatistics
+    @property
+    def supportsAdvancedQueries(self):
+        if self._supportsAdvancedQueries is None:
+            self.__init()
+        return self._supportsAdvancedQueries
+    @property
+    def hasLabels(self):
+        if self._hasLabels is None:
+            self.__init()
+        return self._hasLabels
+    @property
+    def canScaleSymbols(self):
+        if self._canScaleSymbols is None:
+            self.__init()
+        return self._canScaleSymbols
+    @property
+    def capabilities(self):
+        if self._capabilities is None:
+            self.__init()
+        return self._capabilities
+    @property
+    def supportedQueryFormats(self):
+        if self._supportedQueryFormats is None:
+            self.__init()
+        return self._supportedQueryFormats
+    @property
+    def isDataVersioned(self):
+        if self._isDataVersioned is None:
+            self.__init()
+        return self._isDataVersioned
+    @property
+    def ownershipBasedAccessControlForFeatures(self):
+        if self._ownershipBasedAccessControlForFeatures is None:
+            self.__init()
+        return self._ownershipBasedAccessControlForFeatures
+    @property
+    def useStandardizedQueries(self):
+        if self._useStandardizedQueries is None:
+            self.__init()
+        return self._useStandardizedQueries
 ########################################################################    
 class AGOL(BaseAGOLClass):
     """ publishes to AGOL """
