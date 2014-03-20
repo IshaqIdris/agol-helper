@@ -388,7 +388,6 @@ class FeatureLayer(BaseAGOLClass):
             params = {'f':'json'}
             if not self._token is None:
                 params['token'] = self._token
-
             parsed = urlparse.urlparse(attachURL)
             port = parsed.port
             files = []
