@@ -10,6 +10,271 @@ import mimetypes
 from arcpy import mapping
 from arcpy import env
 from base import BaseAGOLClass
+########################################################################
+class Admin(BaseAGOLClass):
+    """
+       The administration resource is the root node and initial entry point
+       into a Spatial Data Server adminstrative interface. This resource 
+       represents a catalog of data sources and services published on the 
+       host.
+       The current version and type of the server is also returned in the 
+       response. The value of the version is a number such that its value 
+       at a future release is guaranteed to be greater than its value at a 
+       previous release.  
+    """
+    _token = None
+    _username = None
+    _password = None
+    _token_url = None
+    _url = None
+    _currentVersion = None
+    _resources = None
+    _serverType = None
+
+    #----------------------------------------------------------------------
+    def __init__(self, url,
+             username=None,
+             password=None,
+             token_url=None):
+        """Constructor"""
+        self._url = url
+        self._token_url = token_url
+        self._username = username
+        self._password = password
+        if not username is None and\
+           not password is None:
+            if not token_url is None:
+                self._token = self.generate_token(tokenURL=token_url)[0]
+            else:
+                self._token = self.generate_token()[0]
+        self.__init()
+    #----------------------------------------------------------------------
+    def __init(self):
+        """ initializes the service """
+        params = {
+            "f" : "json",
+        }
+        if self._token is not None:
+            params['token'] = self._token
+        json_dict = self._do_get(self._url, params)
+        attributes = [attr for attr in dir(self)
+                      if not attr.startswith('__') and \
+                      not attr.startswith('_')]
+        for k,v in json_dict.iteritems():
+            if k in attributes:
+                setattr(self, "_"+ k, json_dict[k])
+            else:
+                print k, " - attribute not implmented."
+    #----------------------------------------------------------------------
+    @property
+    def currentVersion(self):
+        """ returns the software's current version """
+        if self._currentVersion is None:
+            self.__init()
+        return self._currentVersion
+    #----------------------------------------------------------------------
+    @property
+    def resources(self):
+        """ list of all resources on the AGOL site """
+        if self._resources is None:
+            self.__init()
+        return self._resources
+    #----------------------------------------------------------------------
+    @property
+    def serverType(self):
+        """ returns the server type """
+        if self._serverType is None:
+            self.__init()
+        return self._serverType
+    #----------------------------------------------------------------------
+    @property
+    def services(self):
+        """ returns all the service objects in the admin service's page """
+        params = {
+            "f" : "json",
+            "token" : self._token
+        }
+        uURL = self._url + "/services"
+        return self._do_get(url=uURL, param_dict=params)
+########################################################################
+class AdminMapService(BaseAGOLClass):
+    """
+       A map service offer access to map and layer content.
+       
+       The REST API administrative map service resource represents a map 
+       service. This resource provides basic information about the map, 
+       including the layers that it contains, whether the map is cached or 
+       not, its spatial reference, initial and full extents, etc...  The 
+       administrative map service resource maintains a set of operations 
+       that manage the state and contents of the service.
+    """
+    _token = None
+    _username = None
+    _password = None
+    _token_url = None
+    _url = None    
+    #----------------------------------------------------------------------
+    def __init__(self, url,
+             username=None,
+             password=None,
+             token_url=None):
+        """Constructor"""
+        self._url = url
+        self._token_url = token_url
+        self._username = username
+        self._password = password
+        if not username is None and\
+           not password is None:
+            if not token_url is None:
+                self._token = self.generate_token(tokenURL=token_url)[0]
+            else:
+                self._token = self.generate_token()[0]
+        self.__init()
+    #----------------------------------------------------------------------
+    def __init(self):
+        """ initializes the service """
+        params = {
+            "f" : "json",
+        }
+        if self._token is not None:
+            params['token'] = self._token
+        json_dict = self._do_get(self._url, params)
+        attributes = [attr for attr in dir(self)
+                      if not attr.startswith('__') and \
+                      not attr.startswith('_')]
+        for k,v in json_dict.iteritems():
+            if k in attributes:
+                setattr(self, "_"+ k, json_dict[k])
+            else:
+                print k, " - attribute not implmented."
+    #----------------------------------------------------------------------
+    @property
+    def status(self):
+        """ returns the service status """
+        uURL = self._url + "/status"
+        params = {
+            "token" : self._token,
+            "f" : "json"
+        }
+        return self._do_get(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def refresh(self):
+        """ refreshes a service """
+        params = {
+            "f" : "json",
+            "token" : self._token
+        }
+        uURL = self._url + "/refresh"
+        return self._do_get(url=uURL, param_dict=params)
+    
+    
+        
+########################################################################
+class AdminFeatureService(BaseAGOLClass):
+    """
+       A feature service can contain datasets (e.g. tables, views) with and
+       without a spatial column.  Datasets with a spatial column are 
+       considered layers and without a spatial column are considered 
+       tables.  A feature service allows clients to query and edit feature 
+       geometry and attributes.
+       
+       This resource provides basic information about the feature service 
+       including the feature layers and tables that it contains, the 
+       service description, etc.  The administrative feature service 
+       resource maintains a set of operations that manage the state and 
+       contents of the service.  Note, query and edit operations are not 
+       available via the adminstrative resource.
+    """
+    _token = None
+    _username = None
+    _password = None
+    _token_url = None
+    _url = None    
+    #----------------------------------------------------------------------
+    def __init__(self, url,
+             username=None,
+             password=None,
+             token_url=None):
+        """Constructor"""
+        self._url = url
+        self._token_url = token_url
+        self._username = username
+        self._password = password
+        if not username is None and\
+           not password is None:
+            if not token_url is None:
+                self._token = self.generate_token(tokenURL=token_url)[0]
+            else:
+                self._token = self.generate_token()[0]
+        self.__init()
+    #----------------------------------------------------------------------
+    def __init(self):
+        """ initializes the service """
+        params = {
+            "f" : "json",
+        }
+        if self._token is not None:
+            params['token'] = self._token
+        json_dict = self._do_get(self._url, params)
+        attributes = [attr for attr in dir(self)
+                      if not attr.startswith('__') and \
+                      not attr.startswith('_')]
+        for k,v in json_dict.iteritems():
+            if k in attributes:
+                setattr(self, "_"+ k, json_dict[k])
+            else:
+                print k, " - attribute not implmented."
+    #----------------------------------------------------------------------
+    @property
+    def status(self):
+        """ returns the service status """
+        uURL = self._url + "/status"
+        params = {
+            "token" : self._token,
+            "f" : "json"
+        }
+        return self._do_get(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def refresh(self):
+        """ refreshes a service """
+        params = {
+            "f" : "json",
+            "token" : self._token
+        }
+        uURL = self._url + "/refresh"
+        return self._do_get(url=uURL, param_dict=params)
+########################################################################
+class AdminFeatureServiceLayer(BaseAGOLClass):
+    """
+       The layer resource represents a single feature layer or a non 
+       spatial table in a feature service.  A feature layer is a table or 
+       view with at least one spatial column.  
+       For tables, it provides basic information about the table such as 
+       its id, name, fields, types and templates.
+       For feature layers, in addition to the table information above, it 
+       provides information such as its geometry type, min and max scales, 
+       and spatial reference. 
+       Each type includes information about the type such as the type id, 
+       name, and definition expression.  Sub-types also include a default 
+       symbol and a list of feature templates.
+       Each feature template includes a template name, description and a 
+       prototypical feature.
+       The property supportsRollbackOnFailures will be true to indicate the
+       support for transactional edits.
+       The property maxRecordCount returns the maximum number of records 
+       that will be returned at once for a query.
+       The property capabilities returns Query, Create, Delete, Update, and
+       Editing capabilities. The Editing capability will be included if 
+       Create, Delete or Update is enabled for a Feature Service.
+       Note, query and edit operations are not available on a layer in the 
+       adminstrative view.
+    """
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        pass 
+########################################################################    
 class AGOL(BaseAGOLClass):
     """ publishes to AGOL """
     _username = None
@@ -114,6 +379,7 @@ class AGOL(BaseAGOLClass):
         url = "http://www.arcgis.com/sharing/content/users/%s" % (self._username,)
         jres = self._do_get(url=url, param_dict=data, header={"Accept-Encoding":""})
         return jres
+    #----------------------------------------------------------------------
     def getUserInfo(self):
         """ gets a user's info on agol """
         data = {"token": self._token,
@@ -121,18 +387,17 @@ class AGOL(BaseAGOLClass):
         url = "http://www.arcgis.com/sharing/rest/community/users/%s" % (self._username,)
         jres = self._do_get(url=url, param_dict=data, header={"Accept-Encoding":""})
         return jres
-
     #----------------------------------------------------------------------
     def addFile(self, file_path, agol_type, name, tags, description):
         """ loads a file to AGOL """
         params = {
-                    "f" : "json",
-                    "filename" : os.path.basename(file_path),
-                    "type" : agol_type,
-                    "title" : name,
-                    "tags" : tags,
-                    "description" : description
-                }
+            "f" : "json",
+            "filename" : os.path.basename(file_path),
+            "type" : agol_type,
+            "title" : name,
+            "tags" : tags,
+            "description" : description
+        }
         if self._token is not None:
             params['token'] = self._token
         url = "{}/content/users/{}/addItem".format(self._url,
@@ -189,8 +454,8 @@ class AGOL(BaseAGOLClass):
 
         #Turn off caching
         for prop in doc.findall("./Configurations/SVCConfiguration/Definition/" +
-                                    "ConfigurationProperties/PropertyArray/" +
-                                    "PropertySetProperty"):
+                                "ConfigurationProperties/PropertyArray/" +
+                                "PropertySetProperty"):
             if prop.find("Key").text == 'isCached':
                 prop.find("Value").text = "false"
             if prop.find("Key").text == 'maxRecordCount':
@@ -230,10 +495,10 @@ class AGOL(BaseAGOLClass):
 
         }
         vals =self.addFile(file_path=sd,
-                     agol_type="Service Definition",
-                     name=service_name,
-                     tags=tags,
-                     description=description)
+                           agol_type="Service Definition",
+                           name=service_name,
+                           tags=tags,
+                           description=description)
         if "success" in vals:
             return vals['id']
         else:
@@ -242,8 +507,8 @@ class AGOL(BaseAGOLClass):
     def enableSharing(self, agol_id, everyone='true', orgs='true', groups='None'):
         """ changes an items sharing permissions """
         share_url = '{}/content/users/{}/items/{}/share'.format(self._url,
-                                                               self._username,
-                                                               agol_id)
+                                                                self._username,
+                                                                agol_id)
         if groups == None:
             groups = ''
         query_dict = {'f': 'json',
@@ -256,14 +521,15 @@ class AGOL(BaseAGOLClass):
     def updateTitle(self, agol_id, title):
         """ changes an items title"""
         share_url = '{}/content/users/{}/items/{}/update'.format(self._url,
-                                                               self._username,
-                                                               agol_id)
+                                                                 self._username,
+                                                                 agol_id)
 
         query_dict = {'f': 'json',
                       'title' : title,
                       'token': self._token}
         vals = self._do_post(share_url, query_dict)
         return vals
+    #----------------------------------------------------------------------
     def delete_items(self,items):
         content = self.getUserContent()
         #Title, item
@@ -319,10 +585,10 @@ class AGOL(BaseAGOLClass):
         for item in content['items']:
             if item['title'] == service_name and \
                item['item'] == os.path.basename(sd):
-                 print "Deleted: " + self._tostr( self.deleteItem(item['id']))
+                print "Deleted: " + self._tostr( self.deleteItem(item['id']))
 
             elif item['title'] == service_name:
-                 print "Deleted: " + self._tostr( self.deleteItem(item['id']))
+                print "Deleted: " + self._tostr( self.deleteItem(item['id']))
 
         self._agol_id = self._upload_sd_file(sd, service_name=service_name,
                                              tags=tags, description=description)
@@ -330,7 +596,7 @@ class AGOL(BaseAGOLClass):
         if self._agol_id != "Error Uploadings":
             p_vals = self._publish(agol_id=self._agol_id)
             if 'error' in p_vals:
-               raise ValueError(p_vals)
+                raise ValueError(p_vals)
 
             for service in p_vals['services']:
                 if 'error' in service:
@@ -345,15 +611,15 @@ class AGOL(BaseAGOLClass):
     def _publish(self, agol_id):
         """"""
         publishURL = '{}/content/users/{}/publish'.format(self._url,
-                                       self._username)
+                                                          self._username)
 
 
 
         query_dict = {'itemID': agol_id,
-                     'filetype': 'serviceDefinition',
-                     'f': 'json',
-                     'token': self._token
-                     }
+                      'filetype': 'serviceDefinition',
+                      'f': 'json',
+                      'token': self._token
+                      }
 
         return self._do_post(publishURL, query_dict)
     #----------------------------------------------------------------------
@@ -370,7 +636,7 @@ class AGOL(BaseAGOLClass):
 ##        }
 ##        groupsURL = self._url + "community/groups"
 ##        return self._do_post(groupsURL, query_dict)
-
+    #----------------------------------------------------------------------
     def createGroup(self, title, description, tags,
                     snippet=None, phone=None,
                     access="org", sortField=None, sortOrder=None,
@@ -451,10 +717,10 @@ class AGOL(BaseAGOLClass):
             files.append(('thumbnail', thumbnail, os.path.basename(thumbnail)))
 
             return self._post_multipart(host=parsed.hostname,
-                                       selector=parsed.path,
-                                       fields=params,
-                                       files=files,
-                                       ssl=parsed.scheme.lower() == 'https')
+                                        selector=parsed.path,
+                                        fields=params,
+                                        files=files,
+                                        ssl=parsed.scheme.lower() == 'https')
 
         else:
             return self._do_post(url=uURL, param_dict=params)
@@ -476,4 +742,3 @@ def patch_http_response_read(func):
 
     return inner
 httplib.HTTPResponse.read = patch_http_response_read(httplib.HTTPResponse.read)
-
