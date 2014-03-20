@@ -114,6 +114,14 @@ class AGOL(BaseAGOLClass):
         url = "http://www.arcgis.com/sharing/content/users/%s" % (self._username,)
         jres = self._do_get(url=url, param_dict=data, header={"Accept-Encoding":""})
         return jres
+    def getUserInfo(self):
+        """ gets a user's info on agol """
+        data = {"token": self._token,
+                "f": "json"}
+        url = "http://www.arcgis.com/sharing/rest/community/users/%s" % (self._username,)
+        jres = self._do_get(url=url, param_dict=data, header={"Accept-Encoding":""})
+        return jres
+
     #----------------------------------------------------------------------
     def addFile(self, file_path, agol_type, name, tags, description):
         """ loads a file to AGOL """
@@ -135,7 +143,7 @@ class AGOL(BaseAGOLClass):
 
         res = self._post_multipart(host=parsed.hostname,
                                    selector=parsed.path,
-                                   files = file,
+                                   files = files,
                                    fields=params,
                                    ssl=parsed.scheme.lower() == 'https')
         res = self._unicode_convert(json.loads(res))
@@ -149,7 +157,7 @@ class AGOL(BaseAGOLClass):
         jres = self._do_post(deleteURL, query_dict)
         return jres
     #----------------------------------------------------------------------
-    def _modify_sddraft(self, sddraft):
+    def _modify_sddraft(self, sddraft,maxRecordCount='1000'):
         """ modifies the sddraft for agol publishing """
 
         doc = ET.parse(sddraft)
@@ -186,7 +194,7 @@ class AGOL(BaseAGOLClass):
             if prop.find("Key").text == 'isCached':
                 prop.find("Value").text = "false"
             if prop.find("Key").text == 'maxRecordCount':
-                prop.find("Value").text = "1000"
+                prop.find("Value").text = maxRecordCount
 
         for prop in doc.findall("./Configurations/SVCConfiguration/Definition/Extensions/SVCExtension"):
             if prop.find("TypeName").text == 'KmlServer':
@@ -195,7 +203,7 @@ class AGOL(BaseAGOLClass):
         # Turn on feature access capabilities
         for prop in doc.findall("./Configurations/SVCConfiguration/Definition/Info/PropertyArray/PropertySetProperty"):
             if prop.find("Key").text == 'WebCapabilities':
-                prop.find("Value").text = "Query,Create,Update,Delete,Uploads,Editing"
+                prop.find("Value").text = "Query,Create,Update,Delete,Uploads,Editing,Sync"
 
         # Add the namespaces which get stripped, back into the .SD
         root_elem.attrib["xmlns:typens"] = 'http://www.esri.com/schemas/ArcGIS/10.1'
@@ -219,6 +227,7 @@ class AGOL(BaseAGOLClass):
             "title" : service_name,
             "tags" : tags,
             "description" : description
+
         }
         vals =self.addFile(file_path=sd,
                      agol_type="Service Definition",
@@ -231,7 +240,7 @@ class AGOL(BaseAGOLClass):
             return "Error Uploadings"
     #----------------------------------------------------------------------
     def enableSharing(self, agol_id, everyone='true', orgs='true', groups='None'):
-        """ changes and items sharing permissions """
+        """ changes an items sharing permissions """
         share_url = '{}/content/users/{}/items/{}/share'.format(self._url,
                                                                self._username,
                                                                agol_id)
@@ -244,8 +253,25 @@ class AGOL(BaseAGOLClass):
                       'token': self._token}
         vals = self._do_post(share_url, query_dict)
         return vals
+    def updateTitle(self, agol_id, title):
+        """ changes an items title"""
+        share_url = '{}/content/users/{}/items/{}/update'.format(self._url,
+                                                               self._username,
+                                                               agol_id)
+
+        query_dict = {'f': 'json',
+                      'title' : title,
+                      'token': self._token}
+        vals = self._do_post(share_url, query_dict)
+        return vals
+    def delete_items(self,items):
+        content = self.getUserContent()
+        #Title, item
+        for item in content['items']:
+            if item['title'] in items:
+                print "Deleted: " + self._tostr(self.deleteItem(item['id']))
     #----------------------------------------------------------------------
-    def publish_to_agol(self, mxd_path, service_name, tags="None", description="None"):
+    def publish_to_agol(self, mxd_path, service_name="None", tags="None", description="None"):
         """ publishes a service to AGOL """
         mxd = mapping.MapDocument(mxd_path)
         sddraftFolder = env.scratchFolder + os.sep + "draft"
@@ -253,6 +279,14 @@ class AGOL(BaseAGOLClass):
         sddraft = sddraftFolder + os.sep + service_name + ".sddraft"
         sd = sdFolder + os.sep + "%s.sd" % service_name
         mxd = self._prep_mxd(mxd)
+
+        if service_name == "None":
+            service_name = mxd.title.strip().replace(' ','_')
+        if tags == "None":
+            tags = mxd.tags.strip()
+        if description == "None":
+            description = mxd.description.strip()
+
         if os.path.isdir(sddraftFolder) == False:
             os.makedirs(sddraftFolder)
         else:
@@ -285,31 +319,58 @@ class AGOL(BaseAGOLClass):
         for item in content['items']:
             if item['title'] == service_name and \
                item['item'] == os.path.basename(sd):
-                print self.deleteItem(item['id'])
+                 print "Deleted: " + self._tostr( self.deleteItem(item['id']))
+
             elif item['title'] == service_name:
-                print self.deleteItem(item['id'])
+                 print "Deleted: " + self._tostr( self.deleteItem(item['id']))
 
         self._agol_id = self._upload_sd_file(sd, service_name=service_name,
                                              tags=tags, description=description)
-
-        if self._agol_id != "Error Uploadings":
-            p_vals = self._publish(self._agol_id)
-            for service in p_vals['services']:
-                print self.enableSharing(service['serviceItemId'])
-                del service
-            del p_vals
         del mxd
+        if self._agol_id != "Error Uploadings":
+            p_vals = self._publish(agol_id=self._agol_id)
+            if 'error' in p_vals:
+               raise ValueError(p_vals)
+
+            for service in p_vals['services']:
+                if 'error' in service:
+                    raise ValueError(service)
+
+
+
+                return service['serviceItemId']
+            del p_vals
+
     #----------------------------------------------------------------------
     def _publish(self, agol_id):
         """"""
         publishURL = '{}/content/users/{}/publish'.format(self._url,
-                                                          self._username)
+                                       self._username)
+
+
+
         query_dict = {'itemID': agol_id,
                      'filetype': 'serviceDefinition',
                      'f': 'json',
-                     'token': self._token}
+                     'token': self._token
+                     }
+
         return self._do_post(publishURL, query_dict)
     #----------------------------------------------------------------------
+##    def searchGroups(self,q=None, start='1',num=1000,sortField='',
+##               sortOrder='asc'):
+##        query_dict = {
+##            "f" : "json",
+##            "token" : self._token,
+##            "q": q,
+##            "start": start,
+##            "num": num,
+##            "sortField": sortField,
+##            "sortOrder": sortOrder
+##        }
+##        groupsURL = self._url + "community/groups"
+##        return self._do_post(groupsURL, query_dict)
+
     def createGroup(self, title, description, tags,
                     snippet=None, phone=None,
                     access="org", sortField=None, sortOrder=None,
