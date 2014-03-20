@@ -114,7 +114,6 @@ class BaseAGOLClass(object):
         jres = json.loads(result)
         return self._unicode_convert(jres)
     #----------------------------------------------------------------------
-
     def _post_multipart(self, host, selector, fields, files, ssl=False,port=None):
         """ performs a multi-post to AGOL or AGS
             Inputs:
@@ -151,7 +150,7 @@ class BaseAGOLClass(object):
             h = httplib.HTTPConnection(host, port=port)
             h.request('POST', selector, body, headers)
         return h.getresponse().read()
-
+    #----------------------------------------------------------------------
     def _encode_multipart_formdata(self, fields, files):
         boundary = mimetools.choose_boundary()
         buf = StringIO()
@@ -171,9 +170,9 @@ class BaseAGOLClass(object):
         buf.write('--' + boundary + '--\r\n\r\n')
         buf = buf.getvalue()
         return boundary, buf
-
+    #----------------------------------------------------------------------
     def _get_content_type(self, filename):
-
+        """ gets the content type of a file """
         mntype = mimetypes.guess_type(filename)[0]
         filename, fileExtension = os.path.splitext(filename)
         if mntype is None and\
@@ -186,9 +185,11 @@ class BaseAGOLClass(object):
             #mntype = 'application/octet-stream'
             mntype= "File/%s" % fileExtension.replace('.', '')
         return mntype
-
-
+    #----------------------------------------------------------------------
     def _tostr(self,obj):
+        """ converts a object to list, if object is a list, it creates a 
+            comma seperated string.
+        """
         if not obj:
             return ''
         if isinstance(obj, list):

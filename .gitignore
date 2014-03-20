@@ -223,3 +223,5 @@ ___*
 source/[Ss]ampleData/
 source/[Tt]est[Cc]onfigs/
 
+*.wpr
+*.wpu
