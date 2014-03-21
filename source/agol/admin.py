@@ -225,6 +225,7 @@ class AdminFeatureService(BaseAGOLClass):
     _supportsDisconnectedEditing = None
     _spatialReference = None
     _syncEnabled = None
+    _dict = None
     #----------------------------------------------------------------------
     def __init__(self, url,
              username=None,
@@ -251,6 +252,7 @@ class AdminFeatureService(BaseAGOLClass):
         if self._token is not None:
             params['token'] = self._token
         json_dict = self._do_get(self._url, params)
+        self._dict = json_dict
         attributes = [attr for attr in dir(self)
                       if not attr.startswith('__') and \
                       not attr.startswith('_')]
@@ -429,19 +431,107 @@ class AdminFeatureService(BaseAGOLClass):
         if self._supportsDisconnectedEditing is None:
             self.__init()
         return self._supportsDisconnectedEditing
+    #----------------------------------------------------------------------
     @property
     def adminServiceInfo(self):
         """ returns the admin service information"""
         if self._adminServiceInfo is None:
             self.__init()
         return self._adminServiceInfo
+    #----------------------------------------------------------------------
     @property
     def layers(self):
         """ returns the layers for a service """
         if self._layers is None:
             self.__init()
         return self._layers
-    
+    #----------------------------------------------------------------------
+    @property
+    def asDictionary(self):
+        """ returns the feature service as a dictionary object """
+        if self._dict is None:
+            self.__init()
+        return self._dict
+    #----------------------------------------------------------------------
+    def addToDefinition(self, json_dict):
+        """ 
+           The addToDefinition operation supports adding a definition 
+           property to a hosted feature service. The result of this 
+           operation is a response indicating success or failure with error
+           code and description.
+        
+           This function will allow users to change add additional values
+           to an already published service.
+           
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.
+           Output:
+              JSON message as dictionary
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "addToDefinition" : json_dict,
+            "async" : False
+        }
+        uURL = self._url + "/addToDefinition"
+        return self._do_post(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def updateDefinition(self, json_dict):
+        """
+           The updateDefinition operation supports updating a definition 
+           property in a hosted feature service. The result of this 
+           operation is a response indicating success or failure with error
+           code and description.
+           
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.
+           Output:
+              JSON Message as dictionary
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "updateDefinition" : json_dict,
+            "async" : False
+        }
+        uURL = self._url + "/updateDefinition"
+        return self._do_post(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def deleteFromDefinition(self, json_dict):
+        """
+           The deleteFromDefinition operation supports deleting a 
+           definition property from a hosted feature service. The result of
+           this operation is a response indicating success or failure with 
+           error code and description.
+           See: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Delete_From_Definition_Feature_Service/02r30000021w000000/
+           for additional information on this function.
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.  Only 
+                          include the items you want to remove from the 
+                          FeatureService or layer.  
+            
+           Output:
+              JSON Message as dictionary
+        
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "deleteFromDefinition" : json_dict,
+            "async" : False
+        }
+        uURL = self._url + "/deleteFromDefinition"
+        return self._do_post(url=uURL, param_dict=params)        
 ########################################################################
 class AdminFeatureServiceLayer(BaseAGOLClass):
     """
@@ -630,7 +720,6 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
         if self._globalIdField is None:
             self.__init()
         return self._globalIdField
-
     #----------------------------------------------------------------------
     @property
     def objectIdField(self):
@@ -728,77 +817,92 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
         if self._minScale is None:
             self.__init()
         return self._minScale
+    #----------------------------------------------------------------------
     @property
     def maxScale(self):
         """ sets the max scale """
         if self._maxScale is None:
             self.__init()
         return self._maxScale
+    #----------------------------------------------------------------------
     @property
     def effectiveMinScale(self):
         if self._effectiveMinScale is None:
             self.__init()
         return self._effectiveMinScale
+    #----------------------------------------------------------------------
     @property
     def effectiveMaxScale(self):
         if self._effectiveMaxScale is None:
             self.__init()
         return self._effectiveMaxScale
+    #----------------------------------------------------------------------
     @property
     def defaultVisibility(self):
         if self._defaultVisibility is None:
             self.__init()
         return self._defaultVisibility
+    #----------------------------------------------------------------------
     @property
     def extent(self):
         if self._extent is None:
             self.__init()
         return self._extent
+    #----------------------------------------------------------------------
     @property
     def timeInfo(self):
         if self._timeInfo is None:
             self.__init()
         return self._timeInfo
+    #----------------------------------------------------------------------
     @property
     def drawingInfo(self):
         if self._drawingInfo is None:
             self.__init()
         return self._drawingInfo
+    #----------------------------------------------------------------------
     @property
     def hasAttachments(self):
         if self._hasAttachments is None:
             self.__init()
         return self._hasAttachments
+    #----------------------------------------------------------------------
     @property
     def htmlPopupType(self):
         if self._htmlPopupType is None:
             self.__init()
         return self._htmlPopupType
+    #----------------------------------------------------------------------
     @property
     def displayField(self):
         if self._displayField is None:
             self.__init()
         return self._displayField
+    #----------------------------------------------------------------------
     @property
     def typeIdField(self):
         if self._typeIdField is None:
             self.__init()
         return self._typeIdField
+    #----------------------------------------------------------------------
     @property
     def fields(self):
         if self._fields is None:
             self.__init()
         return self._fields
+    #----------------------------------------------------------------------
     @property
     def types(self):
         if self._types is None:
             self.__init()
         return self._types
+    #----------------------------------------------------------------------
     @property
     def relationships(self):
         if self._relationships is None:
             self.__init()
         return self._relationships
+    #----------------------------------------------------------------------
     @property
     def maxRecordCount(self):
         if self._maxRecordCount is None:
@@ -806,56 +910,146 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
             if self._maxRecordCount is None:
                 self._maxRecordCount = 1000
         return self._maxRecordCount
+    #----------------------------------------------------------------------
     @property
     def canModifyLayer(self):
         if self._canModifyLayer is None:
             self.__init()
         return self._canModifyLayer
+    #----------------------------------------------------------------------
     @property
     def supportsStatistics(self):
         if self._supportsStatistics is None:
             self.__init()
         return self._supportsStatistics
+    #----------------------------------------------------------------------
     @property
     def supportsAdvancedQueries(self):
         if self._supportsAdvancedQueries is None:
             self.__init()
         return self._supportsAdvancedQueries
+    #----------------------------------------------------------------------
     @property
     def hasLabels(self):
         if self._hasLabels is None:
             self.__init()
         return self._hasLabels
+    #----------------------------------------------------------------------
     @property
     def canScaleSymbols(self):
         if self._canScaleSymbols is None:
             self.__init()
         return self._canScaleSymbols
+    #----------------------------------------------------------------------
     @property
     def capabilities(self):
         if self._capabilities is None:
             self.__init()
         return self._capabilities
+    #----------------------------------------------------------------------
     @property
     def supportedQueryFormats(self):
         if self._supportedQueryFormats is None:
             self.__init()
         return self._supportedQueryFormats
+    #----------------------------------------------------------------------
     @property
     def isDataVersioned(self):
         if self._isDataVersioned is None:
             self.__init()
         return self._isDataVersioned
+    #----------------------------------------------------------------------
     @property
     def ownershipBasedAccessControlForFeatures(self):
         if self._ownershipBasedAccessControlForFeatures is None:
             self.__init()
         return self._ownershipBasedAccessControlForFeatures
+    #----------------------------------------------------------------------
     @property
     def useStandardizedQueries(self):
         if self._useStandardizedQueries is None:
             self.__init()
         return self._useStandardizedQueries
+    #----------------------------------------------------------------------
+    def addToDefinition(self, json_dict):
+        """ 
+           The addToDefinition operation supports adding a definition 
+           property to a hosted feature service. The result of this 
+           operation is a response indicating success or failure with error
+           code and description.
+        
+           This function will allow users to change add additional values
+           to an already published service.
+           
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.
+           Output:
+              JSON message as dictionary
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "addToDefinition" : json.dumps(json_dict),
+            #"async" : False
+        }
+        uURL = self._url + "/addToDefinition"
+        return self._do_post(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def updateDefinition(self, json_dict):
+        """
+           The updateDefinition operation supports updating a definition 
+           property in a hosted feature service. The result of this 
+           operation is a response indicating success or failure with error
+           code and description.
+           
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.
+           Output:
+              JSON Message as dictionary
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "updateDefinition" : json.dumps(json_dict),
+            "async" : False
+        }
+        uURL = self._url + "/updateDefinition"
+        return self._do_post(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def deleteFromDefinition(self, json_dict):
+        """
+           The deleteFromDefinition operation supports deleting a 
+           definition property from a hosted feature service. The result of
+           this operation is a response indicating success or failure with 
+           error code and description.
+           See: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Delete_From_Definition_Feature_Service/02r30000021w000000/
+           for additional information on this function.
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.  Only 
+                          include the items you want to remove from the 
+                          FeatureService or layer.  
+            
+           Output:
+              JSON Message as dictionary
+        
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "deleteFromDefinition" : json.dumps(json_dict),
+            #"async" : False
+        }
+        uURL = self._url + "/deleteFromDefinition"
+        return self._do_post(url=uURL, param_dict=params)        
 ########################################################################    
 class AGOL(BaseAGOLClass):
     """ publishes to AGOL """
