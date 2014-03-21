@@ -75,7 +75,12 @@ class FeatureLayer(BaseAGOLClass):
             if not token_url is None:
                 self._token = self.generate_token(tokenURL=token_url)[0]
             else:
-                self._token = self.generate_token()[0]
+                 res = self.generate_token()
+                 if res == None:
+                    raise ValueError("Unable to get token")
+                 else:
+                    self._token =res[0]
+
         self.__init()
     #----------------------------------------------------------------------
     def __init(self):

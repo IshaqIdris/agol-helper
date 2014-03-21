@@ -14,13 +14,13 @@ from base import BaseAGOLClass
 class Admin(BaseAGOLClass):
     """
        The administration resource is the root node and initial entry point
-       into a Spatial Data Server adminstrative interface. This resource 
-       represents a catalog of data sources and services published on the 
+       into a Spatial Data Server adminstrative interface. This resource
+       represents a catalog of data sources and services published on the
        host.
-       The current version and type of the server is also returned in the 
-       response. The value of the version is a number such that its value 
-       at a future release is guaranteed to be greater than its value at a 
-       previous release.  
+       The current version and type of the server is also returned in the
+       response. The value of the version is a number such that its value
+       at a future release is guaranteed to be greater than its value at a
+       previous release.
     """
     _token = None
     _username = None
@@ -97,35 +97,35 @@ class Admin(BaseAGOLClass):
         }
         uURL = self._url + "/services"
         res = self._do_get(url=uURL, param_dict=params)
-        
+
         for k, v in res.iteritems():
             if k == "services":
                 for item in v:
                     self._services.append(
-                        AdminFeatureService(url=uURL + "/%s.%s" % (item['adminServiceInfo']['name'], 
+                        AdminFeatureService(url=uURL + "/%s.%s" % (item['adminServiceInfo']['name'],
                                                                         item['adminServiceInfo']['type']),
                                             username=self._username,
                                             password=self._password,
                                             token_url=self._token_url)
-                                            ) 
+                                            )
         return self._services
 ########################################################################
 class AdminMapService(BaseAGOLClass):
     """
        A map service offer access to map and layer content.
-       
-       The REST API administrative map service resource represents a map 
-       service. This resource provides basic information about the map, 
-       including the layers that it contains, whether the map is cached or 
-       not, its spatial reference, initial and full extents, etc...  The 
-       administrative map service resource maintains a set of operations 
+
+       The REST API administrative map service resource represents a map
+       service. This resource provides basic information about the map,
+       including the layers that it contains, whether the map is cached or
+       not, its spatial reference, initial and full extents, etc...  The
+       administrative map service resource maintains a set of operations
        that manage the state and contents of the service.
     """
     _token = None
     _username = None
     _password = None
     _token_url = None
-    _url = None    
+    _url = None
     #----------------------------------------------------------------------
     def __init__(self, url,
              username=None,
@@ -179,30 +179,30 @@ class AdminMapService(BaseAGOLClass):
         }
         uURL = self._url + "/refresh"
         return self._do_get(url=uURL, param_dict=params)
-    
-    
-        
+
+
+
 ########################################################################
 class AdminFeatureService(BaseAGOLClass):
     """
        A feature service can contain datasets (e.g. tables, views) with and
-       without a spatial column.  Datasets with a spatial column are 
-       considered layers and without a spatial column are considered 
-       tables.  A feature service allows clients to query and edit feature 
+       without a spatial column.  Datasets with a spatial column are
+       considered layers and without a spatial column are considered
+       tables.  A feature service allows clients to query and edit feature
        geometry and attributes.
-       
-       This resource provides basic information about the feature service 
-       including the feature layers and tables that it contains, the 
-       service description, etc.  The administrative feature service 
-       resource maintains a set of operations that manage the state and 
-       contents of the service.  Note, query and edit operations are not 
+
+       This resource provides basic information about the feature service
+       including the feature layers and tables that it contains, the
+       service description, etc.  The administrative feature service
+       resource maintains a set of operations that manage the state and
+       contents of the service.  Note, query and edit operations are not
        available via the adminstrative resource.
     """
     _token = None
     _username = None
     _password = None
     _token_url = None
-    _url = None    
+    _url = None
     _xssPreventionInfo = None
     _size = None
     _adminServiceInfo = None
@@ -303,7 +303,7 @@ class AdminFeatureService(BaseAGOLClass):
         """returns the size parameter"""
         if self._size is None:
             self.__init()
-        return self._size   
+        return self._size
     #----------------------------------------------------------------------
     @property
     def maxRecordCount(self):
@@ -394,7 +394,7 @@ class AdminFeatureService(BaseAGOLClass):
         """"""
         if self._editorTrackingInfo is None:
             self.__init()
-        return self._editorTrackingInfo    
+        return self._editorTrackingInfo
     #----------------------------------------------------------------------
     @property
     def hasStaticData(self):
@@ -402,21 +402,21 @@ class AdminFeatureService(BaseAGOLClass):
         if self._hasStaticData is None:
             self.__init()
         return self._hasStaticData
-    
+
     #----------------------------------------------------------------------
     @property
     def currentVersion(self):
         """ returns the map service current version """
         if self._currentVersion is None:
             self.__init()
-        return self._currentVersion    
+        return self._currentVersion
     #----------------------------------------------------------------------
     @property
     def serviceDescription(self):
         """ returns the serviceDescription of the map service """
         if self._serviceDescription is None:
             self.__init()
-        return self._serviceDescription  
+        return self._serviceDescription
     #----------------------------------------------------------------------
     @property
     def hasVersionedData(self):
@@ -454,19 +454,19 @@ class AdminFeatureService(BaseAGOLClass):
         return self._dict
     #----------------------------------------------------------------------
     def addToDefinition(self, json_dict):
-        """ 
-           The addToDefinition operation supports adding a definition 
-           property to a hosted feature service. The result of this 
+        """
+           The addToDefinition operation supports adding a definition
+           property to a hosted feature service. The result of this
            operation is a response indicating success or failure with error
            code and description.
-        
+
            This function will allow users to change add additional values
            to an already published service.
-           
+
            Input:
               json_dict - part to add to host service.  The part format can
-                          be derived from the asDictionary property.  For 
-                          layer level modifications, run updates on each 
+                          be derived from the asDictionary property.  For
+                          layer level modifications, run updates on each
                           individual feature service layer object.
            Output:
               JSON message as dictionary
@@ -482,15 +482,15 @@ class AdminFeatureService(BaseAGOLClass):
     #----------------------------------------------------------------------
     def updateDefinition(self, json_dict):
         """
-           The updateDefinition operation supports updating a definition 
-           property in a hosted feature service. The result of this 
+           The updateDefinition operation supports updating a definition
+           property in a hosted feature service. The result of this
            operation is a response indicating success or failure with error
            code and description.
-           
+
            Input:
               json_dict - part to add to host service.  The part format can
-                          be derived from the asDictionary property.  For 
-                          layer level modifications, run updates on each 
+                          be derived from the asDictionary property.  For
+                          layer level modifications, run updates on each
                           individual feature service layer object.
            Output:
               JSON Message as dictionary
@@ -506,23 +506,23 @@ class AdminFeatureService(BaseAGOLClass):
     #----------------------------------------------------------------------
     def deleteFromDefinition(self, json_dict):
         """
-           The deleteFromDefinition operation supports deleting a 
+           The deleteFromDefinition operation supports deleting a
            definition property from a hosted feature service. The result of
-           this operation is a response indicating success or failure with 
+           this operation is a response indicating success or failure with
            error code and description.
            See: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Delete_From_Definition_Feature_Service/02r30000021w000000/
            for additional information on this function.
            Input:
               json_dict - part to add to host service.  The part format can
-                          be derived from the asDictionary property.  For 
-                          layer level modifications, run updates on each 
-                          individual feature service layer object.  Only 
-                          include the items you want to remove from the 
-                          FeatureService or layer.  
-            
+                          be derived from the asDictionary property.  For
+                          layer level modifications, run updates on each
+                          individual feature service layer object.  Only
+                          include the items you want to remove from the
+                          FeatureService or layer.
+
            Output:
               JSON Message as dictionary
-        
+
         """
         params = {
             "f" : "json",
@@ -531,31 +531,31 @@ class AdminFeatureService(BaseAGOLClass):
             "async" : False
         }
         uURL = self._url + "/deleteFromDefinition"
-        return self._do_post(url=uURL, param_dict=params)        
+        return self._do_post(url=uURL, param_dict=params)
 ########################################################################
 class AdminFeatureServiceLayer(BaseAGOLClass):
     """
-       The layer resource represents a single feature layer or a non 
-       spatial table in a feature service.  A feature layer is a table or 
-       view with at least one spatial column.  
-       For tables, it provides basic information about the table such as 
+       The layer resource represents a single feature layer or a non
+       spatial table in a feature service.  A feature layer is a table or
+       view with at least one spatial column.
+       For tables, it provides basic information about the table such as
        its id, name, fields, types and templates.
-       For feature layers, in addition to the table information above, it 
-       provides information such as its geometry type, min and max scales, 
-       and spatial reference. 
-       Each type includes information about the type such as the type id, 
-       name, and definition expression.  Sub-types also include a default 
+       For feature layers, in addition to the table information above, it
+       provides information such as its geometry type, min and max scales,
+       and spatial reference.
+       Each type includes information about the type such as the type id,
+       name, and definition expression.  Sub-types also include a default
        symbol and a list of feature templates.
-       Each feature template includes a template name, description and a 
+       Each feature template includes a template name, description and a
        prototypical feature.
        The property supportsRollbackOnFailures will be true to indicate the
        support for transactional edits.
-       The property maxRecordCount returns the maximum number of records 
+       The property maxRecordCount returns the maximum number of records
        that will be returned at once for a query.
        The property capabilities returns Query, Create, Delete, Update, and
-       Editing capabilities. The Editing capability will be included if 
+       Editing capabilities. The Editing capability will be included if
        Create, Delete or Update is enabled for a Feature Service.
-       Note, query and edit operations are not available on a layer in the 
+       Note, query and edit operations are not available on a layer in the
        adminstrative view.
     """
     _drawingInfo = None
@@ -972,19 +972,19 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
         return self._useStandardizedQueries
     #----------------------------------------------------------------------
     def addToDefinition(self, json_dict):
-        """ 
-           The addToDefinition operation supports adding a definition 
-           property to a hosted feature service. The result of this 
+        """
+           The addToDefinition operation supports adding a definition
+           property to a hosted feature service. The result of this
            operation is a response indicating success or failure with error
            code and description.
-        
+
            This function will allow users to change add additional values
            to an already published service.
-           
+
            Input:
               json_dict - part to add to host service.  The part format can
-                          be derived from the asDictionary property.  For 
-                          layer level modifications, run updates on each 
+                          be derived from the asDictionary property.  For
+                          layer level modifications, run updates on each
                           individual feature service layer object.
            Output:
               JSON message as dictionary
@@ -1000,15 +1000,15 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
     #----------------------------------------------------------------------
     def updateDefinition(self, json_dict):
         """
-           The updateDefinition operation supports updating a definition 
-           property in a hosted feature service. The result of this 
+           The updateDefinition operation supports updating a definition
+           property in a hosted feature service. The result of this
            operation is a response indicating success or failure with error
            code and description.
-           
+
            Input:
               json_dict - part to add to host service.  The part format can
-                          be derived from the asDictionary property.  For 
-                          layer level modifications, run updates on each 
+                          be derived from the asDictionary property.  For
+                          layer level modifications, run updates on each
                           individual feature service layer object.
            Output:
               JSON Message as dictionary
@@ -1024,23 +1024,23 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
     #----------------------------------------------------------------------
     def deleteFromDefinition(self, json_dict):
         """
-           The deleteFromDefinition operation supports deleting a 
+           The deleteFromDefinition operation supports deleting a
            definition property from a hosted feature service. The result of
-           this operation is a response indicating success or failure with 
+           this operation is a response indicating success or failure with
            error code and description.
            See: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Delete_From_Definition_Feature_Service/02r30000021w000000/
            for additional information on this function.
            Input:
               json_dict - part to add to host service.  The part format can
-                          be derived from the asDictionary property.  For 
-                          layer level modifications, run updates on each 
-                          individual feature service layer object.  Only 
-                          include the items you want to remove from the 
-                          FeatureService or layer.  
-            
+                          be derived from the asDictionary property.  For
+                          layer level modifications, run updates on each
+                          individual feature service layer object.  Only
+                          include the items you want to remove from the
+                          FeatureService or layer.
+
            Output:
               JSON Message as dictionary
-        
+
         """
         params = {
             "f" : "json",
@@ -1049,7 +1049,7 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
             #"async" : False
         }
         uURL = self._url + "/deleteFromDefinition"
-        return self._do_post(url=uURL, param_dict=params)      
+        return self._do_post(url=uURL, param_dict=params)
 ########################################################################
 class AGOL(BaseAGOLClass):
     """ publishes to AGOL """
@@ -1266,31 +1266,7 @@ class AGOL(BaseAGOLClass):
             doc.write(f, 'utf-8')
         del doc
         return newSDdraft
-    #----------------------------------------------------------------------
-##    def _upload_sd_file(self, sd, service_name, tags="None", description="None",folder=None):
-##        """ uploads the sd file to agol """
-####        url = "{}/content/users/{}/addItem".format(self._url,
-####                                                   self._username)
-####        params = {
-####            "f" : "json",
-####            "token" : self._token,
-####            "filename" : os.path.basename(sd),
-####            "type" : "Service Definition",
-####            "title" : service_name,
-####            "tags" : tags,
-####            "description" : description
-####
-####        }
-##        vals =self.addFile(file_path=sd,
-##                           agol_type="Service Definition",
-##                           name=service_name,
-##                           tags=tags,
-##                           description=description,
-##                           folder=folder)
-##        if "success" in vals:
-##            return vals['id']
-##        else:
-##            return "Error Uploadings"
+
    #----------------------------------------------------------------------
     def enableSharing(self, agol_id, everyone='true', orgs='true', groups='None',folder=None):
         """ changes an items sharing permissions """
@@ -1335,8 +1311,14 @@ class AGOL(BaseAGOLClass):
 
                 print "Deleted: " + self._tostr(self.deleteItem(item['id'],folder))
     #----------------------------------------------------------------------
+
     def publish_to_agol(self, mxd_path, service_name="None", tags="None", description="None",folder=None,delete_sd=False):
         """ publishes a service to AGOL """
+
+        if not os.path.isabs(mxd_path):
+            sciptPath = os.getcwd()
+            mxd_path = os.path.join(sciptPath,mxd_path)
+
         mxd = mapping.MapDocument(mxd_path)
         sddraftFolder = env.scratchFolder + os.sep + "draft"
         sdFolder = env.scratchFolder + os.sep + "sd"
