@@ -225,6 +225,8 @@ class AdminFeatureService(BaseAGOLClass):
     _supportsDisconnectedEditing = None
     _spatialReference = None
     _syncEnabled = None
+
+    _dict = None
     #----------------------------------------------------------------------
     def __init__(self, url,
              username=None,
@@ -251,6 +253,7 @@ class AdminFeatureService(BaseAGOLClass):
         if self._token is not None:
             params['token'] = self._token
         json_dict = self._do_get(self._url, params)
+        self._dict = json_dict
         attributes = [attr for attr in dir(self)
                       if not attr.startswith('__') and \
                       not attr.startswith('_')]
@@ -301,7 +304,7 @@ class AdminFeatureService(BaseAGOLClass):
         """returns the size parameter"""
         if self._size is None:
             self.__init()
-        return self._size
+        return self._size   
     #----------------------------------------------------------------------
     @property
     def maxRecordCount(self):
@@ -392,7 +395,7 @@ class AdminFeatureService(BaseAGOLClass):
         """"""
         if self._editorTrackingInfo is None:
             self.__init()
-        return self._editorTrackingInfo
+        return self._editorTrackingInfo    
     #----------------------------------------------------------------------
     @property
     def hasStaticData(self):
@@ -400,21 +403,21 @@ class AdminFeatureService(BaseAGOLClass):
         if self._hasStaticData is None:
             self.__init()
         return self._hasStaticData
-
+    
     #----------------------------------------------------------------------
     @property
     def currentVersion(self):
         """ returns the map service current version """
         if self._currentVersion is None:
             self.__init()
-        return self._currentVersion
+        return self._currentVersion    
     #----------------------------------------------------------------------
     @property
     def serviceDescription(self):
         """ returns the serviceDescription of the map service """
         if self._serviceDescription is None:
             self.__init()
-        return self._serviceDescription
+        return self._serviceDescription  
     #----------------------------------------------------------------------
     @property
     def hasVersionedData(self):
@@ -429,43 +432,131 @@ class AdminFeatureService(BaseAGOLClass):
         if self._supportsDisconnectedEditing is None:
             self.__init()
         return self._supportsDisconnectedEditing
+    #----------------------------------------------------------------------
     @property
     def adminServiceInfo(self):
         """ returns the admin service information"""
         if self._adminServiceInfo is None:
             self.__init()
         return self._adminServiceInfo
+    #----------------------------------------------------------------------
     @property
     def layers(self):
         """ returns the layers for a service """
         if self._layers is None:
             self.__init()
         return self._layers
-
+    #----------------------------------------------------------------------
+    @property
+    def asDictionary(self):
+        """ returns the feature service as a dictionary object """
+        if self._dict is None:
+            self.__init()
+        return self._dict
+    #----------------------------------------------------------------------
+    def addToDefinition(self, json_dict):
+        """ 
+           The addToDefinition operation supports adding a definition 
+           property to a hosted feature service. The result of this 
+           operation is a response indicating success or failure with error
+           code and description.
+        
+           This function will allow users to change add additional values
+           to an already published service.
+           
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.
+           Output:
+              JSON message as dictionary
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "addToDefinition" : json_dict,
+            "async" : False
+        }
+        uURL = self._url + "/addToDefinition"
+        return self._do_post(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def updateDefinition(self, json_dict):
+        """
+           The updateDefinition operation supports updating a definition 
+           property in a hosted feature service. The result of this 
+           operation is a response indicating success or failure with error
+           code and description.
+           
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.
+           Output:
+              JSON Message as dictionary
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "updateDefinition" : json_dict,
+            "async" : False
+        }
+        uURL = self._url + "/updateDefinition"
+        return self._do_post(url=uURL, param_dict=params)
+    #----------------------------------------------------------------------
+    def deleteFromDefinition(self, json_dict):
+        """
+           The deleteFromDefinition operation supports deleting a 
+           definition property from a hosted feature service. The result of
+           this operation is a response indicating success or failure with 
+           error code and description.
+           See: http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Delete_From_Definition_Feature_Service/02r30000021w000000/
+           for additional information on this function.
+           Input:
+              json_dict - part to add to host service.  The part format can
+                          be derived from the asDictionary property.  For 
+                          layer level modifications, run updates on each 
+                          individual feature service layer object.  Only 
+                          include the items you want to remove from the 
+                          FeatureService or layer.  
+            
+           Output:
+              JSON Message as dictionary
+        
+        """
+        params = {
+            "f" : "json",
+            "token" : self._token,
+            "deleteFromDefinition" : json_dict,
+            "async" : False
+        }
+        uURL = self._url + "/deleteFromDefinition"
+        return self._do_post(url=uURL, param_dict=params)        
 ########################################################################
 class AdminFeatureServiceLayer(BaseAGOLClass):
     """
-       The layer resource represents a single feature layer or a non
-       spatial table in a feature service.  A feature layer is a table or
-       view with at least one spatial column.
-       For tables, it provides basic information about the table such as
+       The layer resource represents a single feature layer or a non 
+       spatial table in a feature service.  A feature layer is a table or 
+       view with at least one spatial column.  
+       For tables, it provides basic information about the table such as 
        its id, name, fields, types and templates.
-       For feature layers, in addition to the table information above, it
-       provides information such as its geometry type, min and max scales,
-       and spatial reference.
-       Each type includes information about the type such as the type id,
-       name, and definition expression.  Sub-types also include a default
+       For feature layers, in addition to the table information above, it 
+       provides information such as its geometry type, min and max scales, 
+       and spatial reference. 
+       Each type includes information about the type such as the type id, 
+       name, and definition expression.  Sub-types also include a default 
        symbol and a list of feature templates.
-       Each feature template includes a template name, description and a
+       Each feature template includes a template name, description and a 
        prototypical feature.
        The property supportsRollbackOnFailures will be true to indicate the
        support for transactional edits.
-       The property maxRecordCount returns the maximum number of records
+       The property maxRecordCount returns the maximum number of records 
        that will be returned at once for a query.
        The property capabilities returns Query, Create, Delete, Update, and
-       Editing capabilities. The Editing capability will be included if
+       Editing capabilities. The Editing capability will be included if 
        Create, Delete or Update is enabled for a Feature Service.
-       Note, query and edit operations are not available on a layer in the
+       Note, query and edit operations are not available on a layer in the 
        adminstrative view.
     """
     _drawingInfo = None
@@ -630,7 +721,6 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
         if self._globalIdField is None:
             self.__init()
         return self._globalIdField
-
     #----------------------------------------------------------------------
     @property
     def objectIdField(self):
@@ -645,95 +735,6 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
             self.__init()
         return self._currentVersion
     #----------------------------------------------------------------------
-    @property
-    def id(self):
-        """ returns the id """
-        if self._id is None:
-            self.__init()
-        return self._id
-    #----------------------------------------------------------------------
-    @property
-    def name(self):
-        """ returns the name """
-        if self._name is None:
-            self.__init()
-        return self._name
-    #----------------------------------------------------------------------
-    @property
-    def type(self):
-        """ returns the type """
-        if self._type is None:
-            self.__init()
-        return self._type
-    #----------------------------------------------------------------------
-    @property
-    def description(self):
-        """ returns the layer's description """
-        if self._description is None:
-            self.__init()
-        return self._description
-    #----------------------------------------------------------------------
-    @property
-    def definitionExpression(self):
-        """returns the definitionExpression"""
-        if self._definitionExpression is None:
-            self.__init()
-        return self._definitionExpression
-    #----------------------------------------------------------------------
-    @property
-    def geometryType(self):
-        """returns the geometry type"""
-        if self._geometryType is None:
-            self.__init()
-        return self._geometryType
-    #----------------------------------------------------------------------
-    @property
-    def hasZ(self):
-        """ returns if it has a Z value or not """
-        if self._hasZ is None:
-            self.__init()
-        return self._hasZ
-    #----------------------------------------------------------------------
-    @property
-    def hasM(self):
-        """ returns if it has a m value or not """
-        if self._hasM is None:
-            self.__init()
-        return self._hasM
-    #----------------------------------------------------------------------
-    @property
-    def copyrightText(self):
-        """ returns the copyright text """
-        if self._copyrightText is None:
-            self.__init()
-        return self._copyrightText
-    #----------------------------------------------------------------------
-    @property
-    def parentLayer(self):
-        """ returns information about the parent """
-        if self._parentLayer is None:
-            self.__init()
-        return self._parentLayer
-    #----------------------------------------------------------------------
-    @property
-    def subLayers(self):
-        """ returns sublayers for layer """
-        if self._subLayers is None:
-            self.__init()
-        return self._subLayers
-    #----------------------------------------------------------------------
-    @property
-    def minScale(self):
-        """ minimum scale layer will show """
-        if self._minScale is None:
-            self.__init()
-        return self._minScale
-    @property
-    def maxScale(self):
-        """ sets the max scale """
-        if self._maxScale is None:
-            self.__init()
-        return self._maxScale
     @property
     def effectiveMinScale(self):
         if self._effectiveMinScale is None:
