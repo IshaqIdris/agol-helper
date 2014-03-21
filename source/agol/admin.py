@@ -14,13 +14,13 @@ from base import BaseAGOLClass
 class Admin(BaseAGOLClass):
     """
        The administration resource is the root node and initial entry point
-       into a Spatial Data Server adminstrative interface. This resource 
-       represents a catalog of data sources and services published on the 
+       into a Spatial Data Server adminstrative interface. This resource
+       represents a catalog of data sources and services published on the
        host.
-       The current version and type of the server is also returned in the 
-       response. The value of the version is a number such that its value 
-       at a future release is guaranteed to be greater than its value at a 
-       previous release.  
+       The current version and type of the server is also returned in the
+       response. The value of the version is a number such that its value
+       at a future release is guaranteed to be greater than its value at a
+       previous release.
     """
     _token = None
     _username = None
@@ -97,35 +97,35 @@ class Admin(BaseAGOLClass):
         }
         uURL = self._url + "/services"
         res = self._do_get(url=uURL, param_dict=params)
-        
+
         for k, v in res.iteritems():
             if k == "services":
                 for item in v:
                     self._services.append(
-                        AdminFeatureService(url=uURL + "/%s.%s" % (item['adminServiceInfo']['name'], 
+                        AdminFeatureService(url=uURL + "/%s.%s" % (item['adminServiceInfo']['name'],
                                                                         item['adminServiceInfo']['type']),
                                             username=self._username,
                                             password=self._password,
                                             token_url=self._token_url)
-                                            ) 
+                                            )
         return self._services
 ########################################################################
 class AdminMapService(BaseAGOLClass):
     """
        A map service offer access to map and layer content.
-       
-       The REST API administrative map service resource represents a map 
-       service. This resource provides basic information about the map, 
-       including the layers that it contains, whether the map is cached or 
-       not, its spatial reference, initial and full extents, etc...  The 
-       administrative map service resource maintains a set of operations 
+
+       The REST API administrative map service resource represents a map
+       service. This resource provides basic information about the map,
+       including the layers that it contains, whether the map is cached or
+       not, its spatial reference, initial and full extents, etc...  The
+       administrative map service resource maintains a set of operations
        that manage the state and contents of the service.
     """
     _token = None
     _username = None
     _password = None
     _token_url = None
-    _url = None    
+    _url = None
     #----------------------------------------------------------------------
     def __init__(self, url,
              username=None,
@@ -179,30 +179,30 @@ class AdminMapService(BaseAGOLClass):
         }
         uURL = self._url + "/refresh"
         return self._do_get(url=uURL, param_dict=params)
-    
-    
-        
+
+
+
 ########################################################################
 class AdminFeatureService(BaseAGOLClass):
     """
        A feature service can contain datasets (e.g. tables, views) with and
-       without a spatial column.  Datasets with a spatial column are 
-       considered layers and without a spatial column are considered 
-       tables.  A feature service allows clients to query and edit feature 
+       without a spatial column.  Datasets with a spatial column are
+       considered layers and without a spatial column are considered
+       tables.  A feature service allows clients to query and edit feature
        geometry and attributes.
-       
-       This resource provides basic information about the feature service 
-       including the feature layers and tables that it contains, the 
-       service description, etc.  The administrative feature service 
-       resource maintains a set of operations that manage the state and 
-       contents of the service.  Note, query and edit operations are not 
+
+       This resource provides basic information about the feature service
+       including the feature layers and tables that it contains, the
+       service description, etc.  The administrative feature service
+       resource maintains a set of operations that manage the state and
+       contents of the service.  Note, query and edit operations are not
        available via the adminstrative resource.
     """
     _token = None
     _username = None
     _password = None
     _token_url = None
-    _url = None    
+    _url = None
     _xssPreventionInfo = None
     _size = None
     _adminServiceInfo = None
@@ -301,7 +301,7 @@ class AdminFeatureService(BaseAGOLClass):
         """returns the size parameter"""
         if self._size is None:
             self.__init()
-        return self._size   
+        return self._size
     #----------------------------------------------------------------------
     @property
     def maxRecordCount(self):
@@ -392,7 +392,7 @@ class AdminFeatureService(BaseAGOLClass):
         """"""
         if self._editorTrackingInfo is None:
             self.__init()
-        return self._editorTrackingInfo    
+        return self._editorTrackingInfo
     #----------------------------------------------------------------------
     @property
     def hasStaticData(self):
@@ -400,21 +400,21 @@ class AdminFeatureService(BaseAGOLClass):
         if self._hasStaticData is None:
             self.__init()
         return self._hasStaticData
-    
+
     #----------------------------------------------------------------------
     @property
     def currentVersion(self):
         """ returns the map service current version """
         if self._currentVersion is None:
             self.__init()
-        return self._currentVersion    
+        return self._currentVersion
     #----------------------------------------------------------------------
     @property
     def serviceDescription(self):
         """ returns the serviceDescription of the map service """
         if self._serviceDescription is None:
             self.__init()
-        return self._serviceDescription  
+        return self._serviceDescription
     #----------------------------------------------------------------------
     @property
     def hasVersionedData(self):
@@ -441,31 +441,31 @@ class AdminFeatureService(BaseAGOLClass):
         if self._layers is None:
             self.__init()
         return self._layers
-    
+
 ########################################################################
 class AdminFeatureServiceLayer(BaseAGOLClass):
     """
-       The layer resource represents a single feature layer or a non 
-       spatial table in a feature service.  A feature layer is a table or 
-       view with at least one spatial column.  
-       For tables, it provides basic information about the table such as 
+       The layer resource represents a single feature layer or a non
+       spatial table in a feature service.  A feature layer is a table or
+       view with at least one spatial column.
+       For tables, it provides basic information about the table such as
        its id, name, fields, types and templates.
-       For feature layers, in addition to the table information above, it 
-       provides information such as its geometry type, min and max scales, 
-       and spatial reference. 
-       Each type includes information about the type such as the type id, 
-       name, and definition expression.  Sub-types also include a default 
+       For feature layers, in addition to the table information above, it
+       provides information such as its geometry type, min and max scales,
+       and spatial reference.
+       Each type includes information about the type such as the type id,
+       name, and definition expression.  Sub-types also include a default
        symbol and a list of feature templates.
-       Each feature template includes a template name, description and a 
+       Each feature template includes a template name, description and a
        prototypical feature.
        The property supportsRollbackOnFailures will be true to indicate the
        support for transactional edits.
-       The property maxRecordCount returns the maximum number of records 
+       The property maxRecordCount returns the maximum number of records
        that will be returned at once for a query.
        The property capabilities returns Query, Create, Delete, Update, and
-       Editing capabilities. The Editing capability will be included if 
+       Editing capabilities. The Editing capability will be included if
        Create, Delete or Update is enabled for a Feature Service.
-       Note, query and edit operations are not available on a layer in the 
+       Note, query and edit operations are not available on a layer in the
        adminstrative view.
     """
     _drawingInfo = None
@@ -856,7 +856,7 @@ class AdminFeatureServiceLayer(BaseAGOLClass):
         if self._useStandardizedQueries is None:
             self.__init()
         return self._useStandardizedQueries
-########################################################################    
+########################################################################
 class AGOL(BaseAGOLClass):
     """ publishes to AGOL """
     _username = None
@@ -954,11 +954,13 @@ class AGOL(BaseAGOLClass):
             mxd.save()
         return mxd
     #----------------------------------------------------------------------
-    def getUserContent(self):
+    def getUserContent(self,folder=None):
         """ gets a user's content on agol """
         data = {"token": self._token,
                 "f": "json"}
         url = "http://www.arcgis.com/sharing/content/users/%s" % (self._username,)
+        if folder:
+            url += '/' + folder
         jres = self._do_get(url=url, param_dict=data, header={"Accept-Encoding":""})
         return jres
     #----------------------------------------------------------------------
@@ -970,7 +972,7 @@ class AGOL(BaseAGOLClass):
         jres = self._do_get(url=url, param_dict=data, header={"Accept-Encoding":""})
         return jres
     #----------------------------------------------------------------------
-    def addFile(self, file_path, agol_type, name, tags, description):
+    def addFile(self, file_path, agol_type, name, tags, description,folder=None):
         """ loads a file to AGOL """
         params = {
             "f" : "json",
@@ -982,8 +984,12 @@ class AGOL(BaseAGOLClass):
         }
         if self._token is not None:
             params['token'] = self._token
-        url = "{}/content/users/{}/addItem".format(self._url,
+
+        url = "{}/content/users/{}".format(self._url,
                                                    self._username)
+        if folder:
+            url += '/' + folder
+        url += '/addItem'
         parsed = urlparse.urlparse(url)
         files = []
         files.append(('file', file_path, os.path.basename(file_path)))
@@ -996,9 +1002,14 @@ class AGOL(BaseAGOLClass):
         res = self._unicode_convert(json.loads(res))
         return res
     #----------------------------------------------------------------------
-    def deleteItem(self, item_id):
+    def deleteItem(self, item_id,folder=None):
         """ deletes an agol item by it's ID """
-        deleteURL = '{}/content/users/{}/items/{}/delete'.format(self._url, self._username, item_id)
+
+        deleteURL = '{}/content/users/{}'.format(self._url, self._username )
+        if folder:
+            deleteURL += '/' + folder
+
+        deleteURL += '/items/{}/delete'.format(item_id)
         query_dict = {'f': 'json',
                       'token': self._token}
         jres = self._do_post(deleteURL, query_dict)
@@ -1062,35 +1073,42 @@ class AGOL(BaseAGOLClass):
         del doc
         return newSDdraft
     #----------------------------------------------------------------------
-    def _upload_sd_file(self, sd, service_name, tags="None", description="None"):
-        """ uploads the sd file to agol """
-        url = "{}/content/users/{}/addItem".format(self._url,
-                                                   self._username)
-        params = {
-            "f" : "json",
-            "token" : self._token,
-            "filename" : os.path.basename(sd),
-            "type" : "Service Definition",
-            "title" : service_name,
-            "tags" : tags,
-            "description" : description
-
-        }
-        vals =self.addFile(file_path=sd,
-                           agol_type="Service Definition",
-                           name=service_name,
-                           tags=tags,
-                           description=description)
-        if "success" in vals:
-            return vals['id']
-        else:
-            return "Error Uploadings"
-    #----------------------------------------------------------------------
-    def enableSharing(self, agol_id, everyone='true', orgs='true', groups='None'):
+##    def _upload_sd_file(self, sd, service_name, tags="None", description="None",folder=None):
+##        """ uploads the sd file to agol """
+####        url = "{}/content/users/{}/addItem".format(self._url,
+####                                                   self._username)
+####        params = {
+####            "f" : "json",
+####            "token" : self._token,
+####            "filename" : os.path.basename(sd),
+####            "type" : "Service Definition",
+####            "title" : service_name,
+####            "tags" : tags,
+####            "description" : description
+####
+####        }
+##        vals =self.addFile(file_path=sd,
+##                           agol_type="Service Definition",
+##                           name=service_name,
+##                           tags=tags,
+##                           description=description,
+##                           folder=folder)
+##        if "success" in vals:
+##            return vals['id']
+##        else:
+##            return "Error Uploadings"
+   #----------------------------------------------------------------------
+    def enableSharing(self, agol_id, everyone='true', orgs='true', groups='None',folder=None):
         """ changes an items sharing permissions """
-        share_url = '{}/content/users/{}/items/{}/share'.format(self._url,
-                                                                self._username,
-                                                                agol_id)
+        share_url = '{}/content/users/{}'.format(self._url,self._username)
+
+        if folder:
+            share_url += '/' + folder
+
+        share_url += '/items/{}/share'.format(agol_id)
+
+
+
         if groups == None:
             groups = ''
         query_dict = {'f': 'json',
@@ -1099,27 +1117,31 @@ class AGOL(BaseAGOLClass):
                       'groups' : groups,
                       'token': self._token}
         vals = self._do_post(share_url, query_dict)
-        return vals
-    def updateTitle(self, agol_id, title):
+        return self._tostr(vals)
+    def updateTitle(self, agol_id, title,folder=None):
         """ changes an items title"""
-        share_url = '{}/content/users/{}/items/{}/update'.format(self._url,
-                                                                 self._username,
-                                                                 agol_id)
+        share_url = '{}/content/users/{}'.format(self._url,self._username)
+
+        if folder:
+            share_url += '/' + folder
+
+        share_url += '/items/{}/update'.format(agol_id)
 
         query_dict = {'f': 'json',
                       'title' : title,
                       'token': self._token}
         vals = self._do_post(share_url, query_dict)
-        return vals
+        return self._tostr(vals)
     #----------------------------------------------------------------------
-    def delete_items(self,items):
-        content = self.getUserContent()
+    def delete_items(self,items,folder=None):
+        content = self.getUserContent(folder)
         #Title, item
         for item in content['items']:
             if item['title'] in items:
-                print "Deleted: " + self._tostr(self.deleteItem(item['id']))
+
+                print "Deleted: " + self._tostr(self.deleteItem(item['id'],folder))
     #----------------------------------------------------------------------
-    def publish_to_agol(self, mxd_path, service_name="None", tags="None", description="None"):
+    def publish_to_agol(self, mxd_path, service_name="None", tags="None", description="None",folder=None,delete_sd=False):
         """ publishes a service to AGOL """
         mxd = mapping.MapDocument(mxd_path)
         sddraftFolder = env.scratchFolder + os.sep + "draft"
@@ -1162,7 +1184,7 @@ class AGOL(BaseAGOLClass):
             print analysis['errors']
             sys.exit()
         # POST data to site
-        content = self.getUserContent()
+        content = self.getUserContent(folder=folder)
         #Title, item
         for item in content['items']:
             if item['title'] == service_name and \
@@ -1172,30 +1194,39 @@ class AGOL(BaseAGOLClass):
             elif item['title'] == service_name:
                 print "Deleted: " + self._tostr( self.deleteItem(item['id']))
 
-        self._agol_id = self._upload_sd_file(sd, service_name=service_name,
-                                             tags=tags, description=description)
+        res = self.addFile(sd, agol_type="Service Definition", name=service_name,
+                                             tags=tags, description=description,folder=folder)
+        if "success" in res:
+            self._agol_id =  res['id']
+        else:
+            return "Error Uploading"
+
         del mxd
-        if self._agol_id != "Error Uploadings":
-            p_vals = self._publish(agol_id=self._agol_id)
-            if 'error' in p_vals:
-                raise ValueError(p_vals)
+        p_vals = self._publish(agol_id=self._agol_id,folder=folder)
+        if 'error' in p_vals:
+            raise ValueError(p_vals)
 
-            for service in p_vals['services']:
-                if 'error' in service:
-                    raise ValueError(service)
+        for service in p_vals['services']:
+            if 'error' in service:
+                raise ValueError(service)
+            service_id = service['serviceItemId']
+            break
 
-
-
-                return service['serviceItemId']
-            del p_vals
+        if delete_sd:
+             print "Deleted: " + self._tostr( self.deleteItem( item_id=self._agol_id,folder=folder))
+        del p_vals
+        return service_id
 
     #----------------------------------------------------------------------
-    def _publish(self, agol_id):
+    def _publish(self, agol_id,folder=None):
         """"""
-        publishURL = '{}/content/users/{}/publish'.format(self._url,
+        publishURL = '{}/content/users/{}'.format(self._url,
                                                           self._username)
 
+        if folder:
+            publishURL += '/' + folder
 
+        publishURL += '/publish'
 
         query_dict = {'itemID': agol_id,
                       'filetype': 'serviceDefinition',
