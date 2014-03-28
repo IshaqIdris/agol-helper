@@ -369,12 +369,24 @@ class MultiPoint(Geometry):
         if isinstance(points, list):
             self._points = points
         elif isinstance(points, arcpy.Geometry):
-            self._points = json.loads(points.JSON)['points']
-            self._json = points.JSON
-            self._dict = _unicode_convert(json.loads(self._json))
+            self._points = self.__geomToPointList(points)
         self._wkid = wkid
         self._hasZ = hasZ
         self._hasM = hasM
+    #----------------------------------------------------------------------
+    def __geomToPointList(self, geom):
+        """ converts a geometry object to a common.Geometry object """
+        if isinstance(geom, arcpy.Multipoint):
+            feature_geom = []
+            fPart = []
+            for part in geom:
+                fPart = []
+                for pnt in part:
+                    fPart.append(Point(coord=[pnt.X, pnt.Y], 
+                          wkid=geom.spatialReference.factoryCode, 
+                          z=pnt.Z, m=pnt.M))
+                feature_geom.append(fPart)
+            return feature_geom        
     #----------------------------------------------------------------------
     @property
     def spatialReference(self):
@@ -439,12 +451,24 @@ class Polyline(Geometry):
         if isinstance(paths, list):
             self._paths = paths
         elif isinstance(paths, arcpy.Geometry):
-            self._paths = json.loads(paths.JSON)['paths']
-            self._json = paths.JSON
-            self._dict = _unicode_convert(json.loads(self._json))
+            self._paths = self.__geomToPointList(paths)
         self._wkid = wkid
         self._hasM = hasM
         self._hasZ = hasZ
+    #----------------------------------------------------------------------
+    def __geomToPointList(self, geom):
+        """ converts a geometry object to a common.Geometry object """
+        if isinstance(geom, arcpy.Polyline):
+            feature_geom = []
+            fPart = []
+            for part in geom:
+                fPart = []
+                for pnt in part:
+                    fPart.append(Point(coord=[pnt.X, pnt.Y], 
+                          wkid=geom.spatialReference.factoryCode, 
+                          z=pnt.Z, m=pnt.M))
+                feature_geom.append(fPart)
+            return feature_geom    
     #----------------------------------------------------------------------
     @property
     def spatialReference(self):
@@ -506,12 +530,26 @@ class Polygon(Geometry):
         if isinstance(rings, list):
             self._rings = rings
         elif isinstance(rings, arcpy.Geometry):
-            self._rings = json.loads(rings.JSON)['rings']
+            self._rings = self.__geomToPointList(rings)
 ##            self._json = rings.JSON
 ##            self._dict = _unicode_convert(json.loads(self._json))
         self._wkid = wkid
         self._hasM = hasM
         self._hasZ = hasZ
+    #----------------------------------------------------------------------
+    def __geomToPointList(self, geom):
+        """ converts a geometry object to a common.Geometry object """
+        if isinstance(geom, arcpy.Polygon):
+            feature_geom = []
+            fPart = []
+            for part in geom:
+                fPart = []
+                for pnt in part:
+                    fPart.append(Point(coord=[pnt.X, pnt.Y], 
+                          wkid=geom.spatialReference.factoryCode, 
+                          z=pnt.Z, m=pnt.M))
+                feature_geom.append(fPart)
+            return feature_geom
     #----------------------------------------------------------------------
     @property
     def spatialReference(self):
@@ -823,8 +861,4 @@ def _unicode_convert(obj):
         return obj.encode('utf-8')
     else:
         return obj
-
-
-
-
 
