@@ -299,9 +299,6 @@ class Point(Geometry):
         if not z is None:
             self._z = float(z)
         self._m = m
-        self._dict = self.asDictionary
-        self._json = self.asJSON
-        self._geom = self.asArcPyObject
     #----------------------------------------------------------------------
     @property
     def spatialReference(self):
