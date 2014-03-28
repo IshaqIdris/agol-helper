@@ -47,6 +47,16 @@ def get_attachment_data(attachmentTable, sql,
             })
             del row
     return ret_rows
+
+
+#----------------------------------------------------------------------
+def local_time_to_online():
+
+    is_dst = time.daylight and time.localtime().tm_isdst > 0
+    utc_offset =  (time.altzone if is_dst else time.timezone)
+
+    return (time.mktime(datetime.datetime.now().timetuple())  * 1000) - (utc_offset *1000)
+
 #----------------------------------------------------------------------
 def create_feature_layer(ds, sql, name="layer"):
     """ creates a feature layer object """
@@ -361,7 +371,7 @@ class MultiPoint(Geometry):
         elif isinstance(points, arcpy.Geometry):
             self._points = json.loads(points.JSON)['points']
             self._json = points.JSON
-            self._dict = _unicode_convert(json.loads(self._json))           
+            self._dict = _unicode_convert(json.loads(self._json))
         self._wkid = wkid
         self._hasZ = hasZ
         self._hasM = hasM
@@ -431,7 +441,7 @@ class Polyline(Geometry):
         elif isinstance(paths, arcpy.Geometry):
             self._paths = json.loads(paths.JSON)['paths']
             self._json = paths.JSON
-            self._dict = _unicode_convert(json.loads(self._json))        
+            self._dict = _unicode_convert(json.loads(self._json))
         self._wkid = wkid
         self._hasM = hasM
         self._hasZ = hasZ
@@ -797,10 +807,9 @@ def _unicode_convert(obj):
     elif isinstance(obj, unicode):
         return obj.encode('utf-8')
     else:
-        return obj  
-    
-        
-    
-        
-    
-        
+        return obj
+
+
+
+
+
