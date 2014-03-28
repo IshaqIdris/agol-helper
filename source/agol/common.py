@@ -292,13 +292,14 @@ class Point(Geometry):
             self._y = coord.centroid.Y
             self._z = coord.centroid.Z
             self._m = coord.centroid.M
-            self._json = coord.JSON
             self._geom = coord.centroid
-            self._dict = _unicode_convert(json.loads(self._json))
+
         self._wkid = wkid
         if not z is None:
             self._z = float(z)
-        self._m = m
+        if not m is None:
+            self._m = m
+
     #----------------------------------------------------------------------
     @property
     def spatialReference(self):
@@ -506,8 +507,8 @@ class Polygon(Geometry):
             self._rings = rings
         elif isinstance(rings, arcpy.Geometry):
             self._rings = json.loads(rings.JSON)['rings']
-            self._json = rings.JSON
-            self._dict = _unicode_convert(json.loads(self._json))
+##            self._json = rings.JSON
+##            self._dict = _unicode_convert(json.loads(self._json))
         self._wkid = wkid
         self._hasM = hasM
         self._hasZ = hasZ
@@ -667,8 +668,11 @@ class Feature(object):
     def set_value(self, field_name, value):
         """ sets an attribute value for a given field name """
         if field_name in self.fields:
-            self._dict['attributes'][field_name] = _unicode_convert( value)
-            self._json = json.dumps(self._dict, default=_date_handler)
+            if not value is None:
+                self._dict['attributes'][field_name] = _unicode_convert(value)
+                self._json = json.dumps(self._dict, default=_date_handler)
+            else:
+                pass
         elif field_name.upper() in ['SHAPE', 'SHAPE@', "GEOMETRY"]:
             if isinstance(value, Geometry):
                 if isinstance(value, Point):
@@ -691,6 +695,18 @@ class Feature(object):
                 else:
                     return False
                 self._json = json.dumps(self._dict, default=_date_handler)
+            elif isinstance(value, arcpy.Geometry):
+                if isinstance(value, arcpy.PointGeometry):
+                    self.set_value( field_name, Point(value,value.spatialReference.factoryCode))
+                elif isinstance(value, arcpy.Multipoint):
+                    self.set_value( field_name,  MultiPoint(value,value.spatialReference.factoryCode))
+
+                elif isinstance(value, arcpy.Polyline):
+                    self.set_value( field_name,  Polyline(value,value.spatialReference.factoryCode))
+
+                elif isinstance(value, arcpy.Polygon):
+                    self.set_value( field_name, Polygon(value,value.spatialReference.factoryCode))
+
         else:
             return False
         return True
