@@ -474,6 +474,22 @@ class FeatureLayer(BaseAGOLClass):
                                            wkid,
                                            fields,
                                            objectIdField)
+    def create_feature_template(self):
+        """creates a feature template"""
+
+        fields = self.fields
+        feat_schema = {}
+
+        att = {}
+        for fld in fields:
+            self._globalIdField
+            if not fld['name'] == self._objectIdField and not fld['name'] == self._globalIdField:
+                att[fld['name']] = ''
+
+        feat_schema['attributes'] = att
+        feat_schema['geometry'] = ''
+        return common.Feature(feat_schema)
+
     #----------------------------------------------------------------------
     def query(self,
               where="1=1",
@@ -930,5 +946,5 @@ if __name__ == "__main__":
     url = "https://services2.arcgis.com/PWJUSsdoJDp7SgLj/arcgis/rest/services/GridIndexFeatures/FeatureServer/0"
     file_path = r"c:\temp\copy.jpg"
     oid = 4200
-    fsl = FeatureLayer(url, username="AndrewSolutions", password="#234sprinter")
+    fsl = FeatureLayer(url, username="", password="")
     print fsl.addAttachment(oid, file_path)

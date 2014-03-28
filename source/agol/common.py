@@ -658,7 +658,7 @@ class Feature(object):
     def set_value(self, field_name, value):
         """ sets an attribute value for a given field name """
         if field_name in self.fields:
-            self._dict['attributes'][field_name] = value
+            self._dict['attributes'][field_name] = _unicode_convert( value)
             self._json = json.dumps(self._dict, default=_date_handler)
         elif field_name.upper() in ['SHAPE', 'SHAPE@', "GEOMETRY"]:
             if isinstance(value, Geometry):
