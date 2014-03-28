@@ -8,6 +8,7 @@ if __name__ == "__main__":
     username = ""
     password = ""
     url = ""
+    print 'test'
     fs = featureservice.FeatureService(url, username=username, password=password)
     print fs.createReplica(replicaName="test_replica", 
                            layers="0", 
