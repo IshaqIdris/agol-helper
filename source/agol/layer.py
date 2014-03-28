@@ -941,10 +941,3 @@ class FeatureLayer(BaseAGOLClass):
 class TableLayer(FeatureLayer):
     """Table object is exactly like FeatureLayer object"""
     pass
-
-if __name__ == "__main__":
-    url = "https://services2.arcgis.com/PWJUSsdoJDp7SgLj/arcgis/rest/services/GridIndexFeatures/FeatureServer/0"
-    file_path = r"c:\temp\copy.jpg"
-    oid = 4200
-    fsl = FeatureLayer(url, username="", password="")
-    print fsl.addAttachment(oid, file_path)
