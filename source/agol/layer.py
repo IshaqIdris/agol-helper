@@ -1,3 +1,15 @@
+"""
+
+.. module:: layer
+   :platform: Windows
+   :synopsis: Base Class from which AGOL function inherit from.
+
+.. moduleauthor:: test
+
+
+"""
+
+
 import common
 import filters
 import featureservice

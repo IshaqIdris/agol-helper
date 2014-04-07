@@ -1,3 +1,13 @@
+"""
+.. module:: common
+   :platform: Windows
+   :synopsis: A useful module indeed.
+
+.. moduleauthor:: test
+
+
+"""
+
 import os
 import copy
 import json
@@ -58,6 +68,11 @@ def local_time_to_online():
     utc_offset =  (time.altzone if is_dst else time.timezone)
 
     return (time.mktime(datetime.datetime.now().timetuple())  * 1000) - (utc_offset *1000)
+
+def online_time_to_string(value,timeFormat):
+
+    return datetime.datetime.fromtimestamp(value /1000).strftime(timeFormat)
+
 
 #----------------------------------------------------------------------
 def create_feature_layer(ds, sql, name="layer"):
@@ -382,11 +397,11 @@ class MultiPoint(Geometry):
             for part in geom:
                 fPart = []
                 for pnt in part:
-                    fPart.append(Point(coord=[pnt.X, pnt.Y], 
-                          wkid=geom.spatialReference.factoryCode, 
+                    fPart.append(Point(coord=[pnt.X, pnt.Y],
+                          wkid=geom.spatialReference.factoryCode,
                           z=pnt.Z, m=pnt.M))
                 feature_geom.append(fPart)
-            return feature_geom        
+            return feature_geom
     #----------------------------------------------------------------------
     @property
     def spatialReference(self):
@@ -464,11 +479,11 @@ class Polyline(Geometry):
             for part in geom:
                 fPart = []
                 for pnt in part:
-                    fPart.append(Point(coord=[pnt.X, pnt.Y], 
-                          wkid=geom.spatialReference.factoryCode, 
+                    fPart.append(Point(coord=[pnt.X, pnt.Y],
+                          wkid=geom.spatialReference.factoryCode,
                           z=pnt.Z, m=pnt.M))
                 feature_geom.append(fPart)
-            return feature_geom    
+            return feature_geom
     #----------------------------------------------------------------------
     @property
     def spatialReference(self):
@@ -545,8 +560,8 @@ class Polygon(Geometry):
             for part in geom:
                 fPart = []
                 for pnt in part:
-                    fPart.append(Point(coord=[pnt.X, pnt.Y], 
-                          wkid=geom.spatialReference.factoryCode, 
+                    fPart.append(Point(coord=[pnt.X, pnt.Y],
+                          wkid=geom.spatialReference.factoryCode,
                           z=pnt.Z, m=pnt.M))
                 feature_geom.append(fPart)
             return feature_geom
