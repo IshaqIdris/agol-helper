@@ -1,6 +1,14 @@
 """
-   Base Class from which AGOL function inherit from.
+
+.. module:: base
+   :platform: Windows
+   :synopsis: Base Class from which AGOL function inherit from.
+
+.. moduleauthor:: test
+
+
 """
+
 import os
 import urllib
 import urllib2
@@ -187,7 +195,7 @@ class BaseAGOLClass(object):
         return mntype
     #----------------------------------------------------------------------
     def _tostr(self,obj):
-        """ converts a object to list, if object is a list, it creates a 
+        """ converts a object to list, if object is a list, it creates a
             comma seperated string.
         """
         if not obj:
