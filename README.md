@@ -1,3 +1,6 @@
+# Deprecated as of 4/9/2014
+This repo has been merged with another python repo and no longer will be updated.  Please visit [ArcREST](https://github.com/esri/ArcREST/) for the latest version.
+
 # AGOL Tools
 
 A set of python tools to assist working with AGOL feature services and AGOL.  A series of scripts are provided to demonstrate how to use this library.  
